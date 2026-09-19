@@ -131,6 +131,17 @@ Create a lightweight evaluation framework to measure output quality and hallucin
 ### Phase 6 — User experience
 Build a simple interface for uploading feedback and reviewing the analysis.
 
+## Run the review prototype
+
+The prototype now includes a Streamlit review interface that keeps a human in the decision loop.
+
+1. Install dependencies: `pip install -r requirements.txt`
+2. Set `OPENAI_API_KEY` in your environment.
+3. Optionally set `OPENAI_MODEL` to override the default model.
+4. Start the app: `streamlit run app.py`
+
+Use the included synthetic dataset or upload a CSV with `feedback_id`, `source`, `persona` and `feedback` columns. The interface lets a reviewer inspect cited evidence, edit the AI interpretation, accept or reject each finding, add notes and download the reviewed result.
+
 ## Technology
 
 The exact technical architecture will evolve as the project develops.
@@ -147,9 +158,9 @@ Likely components include:
 
 ## Project status
 
-🚧 Early development
+🧪 Working review prototype
 
-The current focus is defining the product problem, MVP and responsible AI approach before expanding the technical implementation.
+The current prototype generates evidence-linked findings and supports explicit human review. The next focus is repeatable evaluation against the human-created reference analysis.
 
 ## About this project
 

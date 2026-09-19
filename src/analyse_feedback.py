@@ -8,19 +8,15 @@ from openai import OpenAI
 
 DATA_FILE = Path(__file__).parent.parent / "data" / "sample-feedback.csv"
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-
-def load_feedback():
-    """Load customer feedback from the sample CSV dataset."""
-    with DATA_FILE.open("r", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        return list(reader)
+def load_feedback(data_file=DATA_FILE):
+    """Load customer feedback from a CSV dataset."""
+    with Path(data_file).open("r", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
 
 def build_prompt(feedback):
     """Create the product-discovery analysis prompt."""
-
     feedback_text = "\n".join(
         f"{item['feedback_id']} | {item['source']} | "
         f"{item['persona']} | {item['feedback']}"
@@ -53,20 +49,14 @@ For each meaningful theme return:
 - potential_opportunity
 - contradictory_evidence
 
-Evidence strength must be one of:
-
-- Strong
-- Moderate
-- Limited
-
-Base evidence strength on the amount, consistency and diversity of evidence,
-not on your own confidence.
+Evidence strength must be one of Strong, Moderate or Limited. Base it on the
+amount, consistency and diversity of evidence, not on your own confidence.
 
 CUSTOMER FEEDBACK:
 
 {feedback_text}
 
-Return your response as valid JSON using this structure:
+Return only valid JSON using this structure:
 
 {{
   "themes": [
@@ -84,32 +74,36 @@ Return your response as valid JSON using this structure:
 """
 
 
-def analyse_feedback(feedback):
-    """Send the feedback to the language model for analysis."""
+def analyse_feedback(feedback, client=None):
+    """Analyse feedback and return a parsed, validated result."""
+    if not feedback:
+        raise ValueError("At least one feedback record is required.")
 
-    prompt = build_prompt(feedback)
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if client is None and not api_key:
+        raise RuntimeError("Set OPENAI_API_KEY before running an analysis.")
 
-    response = client.responses.create(
-        model="gpt-5.6",
-        input=prompt
+    active_client = client or OpenAI(api_key=api_key)
+    response = active_client.responses.create(
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.6"),
+        input=build_prompt(feedback),
     )
 
-    return response.output_text
+    try:
+        result = json.loads(response.output_text)
+    except json.JSONDecodeError as error:
+        raise ValueError("The model returned invalid JSON.") from error
+
+    if not isinstance(result.get("themes"), list):
+        raise ValueError("The model response must contain a themes list.")
+    return result
 
 
 def main():
     feedback = load_feedback()
-
     print(f"Loaded {len(feedback)} feedback records.")
     print("Analysing customer feedback...\n")
-
-    result = analyse_feedback(feedback)
-
-    try:
-        parsed = json.loads(result)
-        print(json.dumps(parsed, indent=2))
-    except json.JSONDecodeError:
-        print(result)
+    print(json.dumps(analyse_feedback(feedback), indent=2))
 
 
 if __name__ == "__main__":
