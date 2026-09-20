@@ -1,0 +1,30 @@
+{
+  "run_metadata": {
+    "run_id": "scorer-fixture-01",
+    "purpose": "Test the evaluation workflow only; not a reported model benchmark",
+    "model": "fixture",
+    "prompt_version": "v1",
+    "dataset": "data/sample-feedback.csv",
+    "record_count": 40
+  },
+  "themes": [
+    {
+      "theme_id": "T01",
+      "theme": "Manual reconciliation and exception handling",
+      "evidence_ids": ["F001", "F002", "F005", "F012", "F014", "F017", "F019", "F021", "F025", "F026", "F031", "F038"],
+      "contradictory_evidence": ["F026", "F033"]
+    },
+    {
+      "theme_id": "T02",
+      "theme": "Delayed visibility of failed or pending payments",
+      "evidence_ids": ["F003", "F004", "F010", "F016", "F020", "F022", "F027", "F028", "F034", "F040"],
+      "contradictory_evidence": ["F023"]
+    },
+    {
+      "theme_id": "T03",
+      "theme": "Payment communication and audit history",
+      "evidence_ids": ["F008", "F013", "F032", "F037"],
+      "contradictory_evidence": []
+    }
+  ]
+}
