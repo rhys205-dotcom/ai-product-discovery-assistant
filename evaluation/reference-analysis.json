@@ -1,0 +1,41 @@
+{
+  "reference_version": "1.0",
+  "dataset": "data/sample-feedback.csv",
+  "record_count": 40,
+  "method": "Human review of every record, grouping recurring problems and retaining contradictory or qualifying evidence.",
+  "themes": [
+    {
+      "theme_id": "T01",
+      "theme": "Manual reconciliation and exception handling",
+      "required_evidence_ids": ["F001", "F002", "F005", "F007", "F012", "F014", "F017", "F019", "F021", "F025", "F026", "F029", "F031", "F033", "F035", "F038"],
+      "minimum_support": 4,
+      "contradictory_or_qualifying_ids": ["F006", "F026", "F029", "F033", "F036"],
+      "problem_statement": "Finance users spend substantial time reconciling payment data with bank and accounting records, while exceptions, refunds and shared investigations make discrepancies difficult to resolve.",
+      "opportunity_boundary": "Help users identify and investigate exceptions while preserving review and approval; the evidence does not support fully autonomous reconciliation."
+    },
+    {
+      "theme_id": "T02",
+      "theme": "Delayed visibility of failed or pending payments",
+      "required_evidence_ids": ["F003", "F004", "F008", "F010", "F011", "F016", "F020", "F022", "F023", "F027", "F028", "F032", "F034", "F040"],
+      "minimum_support": 4,
+      "contradictory_or_qualifying_ids": ["F006", "F023", "F036"],
+      "problem_statement": "Administrators and managers often discover failed or pending payments late, sometimes only after a customer contacts them, and need clearer status, reasons and proactive alerts.",
+      "opportunity_boundary": "Surface actionable exceptions and status history; do not infer that all payment-status information is unclear."
+    },
+    {
+      "theme_id": "T03",
+      "theme": "Payment communication and audit history",
+      "required_evidence_ids": ["F008", "F013", "F022", "F032", "F037"],
+      "minimum_support": 3,
+      "contradictory_or_qualifying_ids": ["F023"],
+      "problem_statement": "Teams need a clearer record of payment events and customer communications to avoid duplicate reminders and answer disputes or status questions consistently.",
+      "opportunity_boundary": "Improve history and traceability without treating isolated receipt-branding requests as a core problem."
+    }
+  ],
+  "deliberate_distractors": ["F009", "F018", "F024", "F030", "F039"],
+  "notes": [
+    "Theme boundaries overlap because a single feedback record can support more than one customer problem.",
+    "The reference is a documented human judgement, not objective ground truth.",
+    "Future reviewers should record disagreements rather than silently changing the reference."
+  ]
+}
