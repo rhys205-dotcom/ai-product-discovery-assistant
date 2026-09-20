@@ -18,6 +18,7 @@ The metrics are deliberately separated. A run can cite only valid IDs while stil
 - `reference-analysis.json` — human-created comparison point for the 40-record synthetic dataset.
 - `example-run.json` — deterministic fixture used to verify the scorer; it is **not** claimed as model performance.
 - `evaluate.py` — dependency-free scoring script.
+- `run_gemini_benchmark.py` — secure runner for exactly three controlled Gemini analyses.
 - `results.md` — current status and instructions for the first repeated benchmark.
 
 ## Run the scorer
@@ -34,6 +35,36 @@ To save the score:
 python evaluation/evaluate.py evaluation/example-run.json \
   --output evaluation/example-run-score.json
 ```
+
+## Generate three controlled Gemini runs
+
+Create a key in [Google AI Studio](https://aistudio.google.com/apikey). Keep it out of the repository and set it only as an environment variable.
+
+PowerShell:
+
+```powershell
+$env:GEMINI_API_KEY="your-key"
+python evaluation/run_gemini_benchmark.py
+```
+
+macOS, Linux or GitHub Codespaces:
+
+```bash
+export GEMINI_API_KEY="your-key"
+python evaluation/run_gemini_benchmark.py
+```
+
+The runner:
+
+- makes exactly three API calls;
+- uses `gemini-3.5-flash` unless `GEMINI_MODEL` is explicitly set;
+- sends only the synthetic public dataset;
+- requests schema-constrained JSON;
+- disables server-side interaction storage for each call;
+- writes model, prompt hash, prompt version and timestamps to the run manifest;
+- never writes the API key to disk.
+
+Raw outputs are saved under `evaluation/runs/<benchmark-id>/`. Human theme mapping is deliberately required before scoring so the benchmark does not disguise subjective matching as an automated fact.
 
 ## Run a genuine benchmark
 
