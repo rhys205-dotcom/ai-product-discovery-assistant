@@ -3,6 +3,7 @@
 A working product experiment for turning qualitative customer feedback into evidence-linked findings and proposed opportunities while keeping human review explicit.
 
 - **Public review demo:** [dowsall.com/discovery-assistant](https://dowsall.com/discovery-assistant)
+- **Benchmark results:** [Three controlled Gemini runs](evaluation/results.md)
 - **Product decision log:** [docs/ai-decisions.md](docs/ai-decisions.md)
 - **Current backlog:** [backlog.md](backlog.md)
 
@@ -86,7 +87,7 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 
 ## What is validated—and what is not
 
-### Implemented
+### Implemented and evaluated
 
 - Evidence-linked structured findings
 - Detection of missing cited feedback IDs in the review interface
@@ -96,24 +97,31 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 - Public static review workflow
 - Human-created reference analysis for the 40-record dataset
 - Transparent scoring for theme coverage, citation validity, evidence relevance and contradiction coverage
-- Deterministic scorer fixture and controlled-run protocol
 - Secure Gemini benchmark runner limited to three controlled calls
+- Three independently generated, human-mapped and scored benchmark runs
+
+### Benchmark finding
+
+Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently found the two dominant themes but missed the smaller communication and audit-history theme in every run, producing mean theme coverage of 66.7%.
+
+This identifies **theme coverage** as the next problem to test. It does not support adding RAG: the relevant records were generally retrieved, but overlapping problems were grouped too broadly.
+
+See the [full results and limitations](evaluation/results.md).
 
 ### Not yet validated
 
-- Repeatable faithfulness across multiple model runs
-- Agreement with a human-created reference analysis
-- Hallucination and irrelevant-citation rate
+- Whether a revised prompt improves smaller-theme separation
+- Whether performance generalises to other datasets or models
 - Time saved for product practitioners
 - Performance on larger or commercially realistic datasets
 
 Those gaps are the current focus of the [backlog](backlog.md); they are not presented as completed outcomes.
 
-## Evaluation baseline
+## Evaluation
 
-The [evaluation workspace](evaluation/README.md) contains a documented human reference, inspectable scoring rules and a protocol for repeated model runs. It deliberately separates valid citations from relevant evidence and reports missed themes and contradictory evidence independently.
+The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, raw model outputs, human mappings and per-run scores.
 
-The included fixture verifies the scorer only. It is not presented as model-performance evidence. A secure Gemini runner is available for the next experiment and records the provider, model, prompt version, prompt hash and timestamps without storing the API key.
+The first controlled benchmark keeps the dataset, prompt and model fixed across three runs. It reports every run rather than selecting the strongest output and records both quantitative scores and qualitative failure modes. The API key is never written to the repository.
 
 ## Repository structure
 
@@ -121,15 +129,15 @@ The included fixture verifies the scorer only. It is not presented as model-perf
 - `src/analyse_feedback.py` — prompt construction and LLM analysis
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — evaluation material
+- `evaluation/` — reference, runner, raw benchmark outputs and scores
 - `examples/` — example outputs
 - `backlog.md` — current experiments and deferred scope
 
 ## Status
 
-**v0.3 — Evaluation baseline implemented**
+**v0.4 — First controlled benchmark completed**
 
-The next milestone is three controlled model runs against the fixed dataset and prompt, followed by transparent reporting of variation and failure modes.
+The next milestone is a separately versioned prompt experiment targeting the consistently missed communication and audit-history theme while retaining `v1` as the baseline.
 
 ## About
 
