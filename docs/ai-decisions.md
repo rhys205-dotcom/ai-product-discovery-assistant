@@ -225,13 +225,14 @@ A successful demonstration is therefore not sufficient evidence of a reliable AI
 
 Generated findings will be presented for review rather than automatically accepted.
 
-Future versions may allow users to:
+The current review prototype allows users to:
 
-- accept a finding
-- reject a finding
-- edit a finding
-- inspect its evidence
-- flag unsupported conclusions
+- accept, edit or reject a finding
+- inspect the cited source evidence
+- record a review note
+- export the reviewed result
+
+The interface also warns when a cited feedback ID is missing from the supplied dataset. Relevance and faithfulness still require human assessment.
 
 ### Why
 
@@ -317,12 +318,12 @@ These questions will be revisited as the prototype develops.
 |---|---|---|
 | Role of AI | Assist, not decide | Accepted |
 | Evidence traceability | Required | Accepted |
-| Human review | Required | Accepted |
+| Human review | Required | Implemented in v0.2 |
 | Model confidence scores | Avoid | Accepted |
-| Synthetic data | Use for public prototype | Accepted |
-| Structured outputs | Preferred | Accepted |
-| RAG | Not required for MVP | Review later |
-| Embeddings | Not required for MVP | Review later |
-| Evaluation framework | Required | Planned |
+| Synthetic data | Use for public prototype | Implemented |
+| Structured outputs | Preferred | Implemented |
+| RAG | Not required for MVP | Deferred pending evidence |
+| Embeddings | Not required for MVP | Deferred pending evidence |
+| Evaluation framework | Required | In progress for v0.3 |
 
 This document will evolve as the product is tested and new evidence becomes available.
