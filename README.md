@@ -97,6 +97,7 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 - Human-created reference analysis for the 40-record dataset
 - Transparent scoring for theme coverage, citation validity, evidence relevance and contradiction coverage
 - Deterministic scorer fixture and controlled-run protocol
+- Secure Gemini benchmark runner limited to three controlled calls
 
 ### Not yet validated
 
@@ -112,7 +113,7 @@ Those gaps are the current focus of the [backlog](backlog.md); they are not pres
 
 The [evaluation workspace](evaluation/README.md) contains a documented human reference, inspectable scoring rules and a protocol for repeated model runs. It deliberately separates valid citations from relevant evidence and reports missed themes and contradictory evidence independently.
 
-The included fixture verifies the scorer only. It is not presented as model-performance evidence. Controlled repeated runs are the next experiment.
+The included fixture verifies the scorer only. It is not presented as model-performance evidence. A secure Gemini runner is available for the next experiment and records the provider, model, prompt version, prompt hash and timestamps without storing the API key.
 
 ## Repository structure
 
