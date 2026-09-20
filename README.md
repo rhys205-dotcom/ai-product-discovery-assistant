@@ -1,169 +1,126 @@
 # AI Product Discovery Assistant
 
-An experimental AI-powered product discovery tool that turns unstructured customer feedback into evidence-backed themes, problems, opportunities and product recommendations.
+A working product experiment for turning qualitative customer feedback into evidence-linked findings and proposed opportunities while keeping human review explicit.
 
-## Why this project exists
+- **Public review demo:** [dowsall.com/discovery-assistant](https://dowsall.com/discovery-assistant)
+- **Product decision log:** [docs/ai-decisions.md](docs/ai-decisions.md)
+- **Current backlog:** [backlog.md](backlog.md)
 
-Product teams often have large volumes of qualitative feedback from customer interviews, support tickets, surveys and research sessions.
+## The product problem
 
-The challenge is not collecting feedback. It is turning that feedback into useful product insight without losing the evidence behind it.
+Product teams can collect more interviews, support tickets and survey comments than they can analyse consistently. Summaries alone are not enough: a reviewer needs to see which customer evidence supports a finding, where the model has inferred meaning and what still requires product judgment.
 
-This project explores how generative AI can support product discovery by helping teams:
+This project tests whether an LLM can accelerate that analysis without hiding the evidence or making autonomous roadmap decisions.
 
-- identify recurring customer themes
-- surface customer pain points
-- group similar feedback
-- generate problem statements
-- suggest product opportunities
-- produce draft user stories and acceptance criteria
-- retain traceability back to the original customer evidence
+## Current prototype
 
-The goal is to support product judgement, not replace it.
+The Streamlit prototype can:
 
-## The problem
+1. Load the included synthetic dataset or accept an uploaded CSV.
+2. Ask an LLM for structured themes, pain points, cited evidence and proposed opportunities.
+3. Display the source feedback cited for each finding.
+4. Keep evidence, AI interpretation and proposed opportunity visually separate.
+5. Let a reviewer accept, edit or reject each finding and add a note.
+6. Export the reviewed result as JSON.
 
-Traditional analysis of qualitative customer feedback can be:
+The application does **not** automatically prioritise features, make roadmap decisions or treat model confidence as proof.
 
-- time-consuming
-- inconsistent
-- difficult to scale
-- vulnerable to confirmation bias
-- hard to trace back to original evidence
+## Two demonstration modes
 
-Large Language Models can help accelerate this work, but they introduce their own risks including hallucination, over-generalisation and loss of context.
+### Public review workflow
 
-This project explores how those risks can be reduced through evidence-backed outputs and human review.
+The [public demo](https://dowsall.com/discovery-assistant) uses 40 synthetic feedback records and a pre-generated sample analysis. It does not call a live model, upload visitor data or send information to a server.
 
-## MVP
+Its purpose is to demonstrate the higher-value product interaction: inspecting evidence, challenging an interpretation and recording a human decision.
 
-The first version will allow a user to provide a collection of customer feedback and receive:
+### Local LLM prototype
 
-1. Key themes
-2. Customer pain points
-3. Supporting evidence
-4. Suggested problem statements
-5. Potential product opportunities
-6. Draft user stories
-7. Confidence or evidence indicators
+The local Streamlit application sends the supplied feedback to a configurable OpenAI model and returns structured JSON for review. Use synthetic or otherwise authorised data only.
 
-The system should clearly distinguish between:
+## Run locally
 
-- what customers actually said
-- what the AI inferred
-- what the AI recommends
+1. Install dependencies:
 
-## Example workflow
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Customer feedback
-
-↓
-
-AI analysis
-
-↓
-
-Themes and pain points
-
-↓
-
-Evidence from original feedback
-
-↓
-
-Product opportunities
-
-↓
-
-Human review and prioritisation
-
-## Responsible AI principles
-
-This project is being designed around several principles:
-
-### Evidence before conclusions
-
-Important findings should be traceable back to the original customer feedback.
-
-### Human-in-the-loop
-
-AI recommendations should support product decision-making rather than make decisions autonomously.
-
-### Transparency
-
-The application should clearly separate source evidence from AI-generated interpretation.
-
-### Privacy
-
-The demonstration version will use synthetic customer data rather than real customer information.
-
-### Evaluation
-
-AI-generated insights should be assessed for usefulness, accuracy and faithfulness to the source material.
-
-## How success could be measured
-
-Possible product metrics include:
-
-- percentage of generated themes supported by source evidence
-- number of unsupported or hallucinated claims
-- agreement between AI-generated themes and human analysis
-- time saved during qualitative research analysis
-- usefulness rating from product users
-- percentage of AI recommendations accepted or edited by users
-
-## Planned development
-
-### Phase 1 — Product definition
-Define the problem, users, MVP and success measures.
-
-### Phase 2 — Basic AI analysis
-Analyse synthetic customer feedback and generate structured themes and pain points.
-
-### Phase 3 — Evidence and traceability
-Link generated insights back to the source feedback.
-
-### Phase 4 — Product recommendations
-Generate problem statements, opportunities and draft user stories.
-
-### Phase 5 — Evaluation
-Create a lightweight evaluation framework to measure output quality and hallucination risk.
-
-### Phase 6 — User experience
-Build a simple interface for uploading feedback and reviewing the analysis.
-
-## Run the review prototype
-
-The prototype now includes a Streamlit review interface that keeps a human in the decision loop.
-
-1. Install dependencies: `pip install -r requirements.txt`
 2. Set `OPENAI_API_KEY` in your environment.
-3. Optionally set `OPENAI_MODEL` to override the default model.
-4. Start the app: `streamlit run app.py`
+3. Optionally set `OPENAI_MODEL` to override the configured default.
+4. Start the application:
 
-Use the included synthetic dataset or upload a CSV with `feedback_id`, `source`, `persona` and `feedback` columns. The interface lets a reviewer inspect cited evidence, edit the AI interpretation, accept or reject each finding, add notes and download the reviewed result.
+   ```bash
+   streamlit run app.py
+   ```
 
-## Technology
+The CSV must contain:
 
-The exact technical architecture will evolve as the project develops.
+- `feedback_id`
+- `source`
+- `persona`
+- `feedback`
 
-Likely components include:
+## Product principles
+
+- **AI assists; people decide.** Findings are proposals for review.
+- **Evidence before conclusions.** Every finding should cite source feedback IDs.
+- **Separate evidence from inference.** Customer statements, model interpretation and proposed opportunities are different things.
+- **No false precision.** Evidence strength is based on observable support, not a model-generated probability.
+- **Synthetic public data.** The demonstration exposes no former-employer or customer information.
+- **Evaluate repeated performance.** A polished example is not evidence that the product is reliable.
+
+The reasoning behind these choices is recorded in the [AI decision log](docs/ai-decisions.md).
+
+## Current architecture
 
 - Python
-- Large Language Model API
-- structured prompting
-- embeddings and semantic search
-- retrieval-augmented generation (RAG)
-- lightweight web interface
-- automated evaluation
+- Streamlit review interface
+- OpenAI Responses API
+- Structured JSON output
+- CSV input
+- Synthetic 40-record sample dataset
+- Human accept/edit/reject workflow
+- Reviewed JSON export
 
-## Project status
+RAG, embeddings and vector storage are deliberately excluded from the MVP. They will be considered only if evaluation shows that dataset size or evidence retrieval makes them necessary.
 
-🧪 Working review prototype
+## What is validated—and what is not
 
-The current prototype generates evidence-linked findings and supports explicit human review. The next focus is repeatable evaluation against the human-created reference analysis.
+### Implemented
 
-## About this project
+- Evidence-linked structured findings
+- Detection of missing cited feedback IDs in the review interface
+- Human review decisions and notes
+- Editable interpretation
+- Review export
+- Public static review workflow
 
-This is a personal learning project exploring the practical use of generative AI in product management, business analysis and customer discovery.
+### Not yet validated
 
-The aim is not simply to demonstrate an AI API integration, but to explore how AI-enabled products can be designed, evaluated and governed responsibly.
+- Repeatable faithfulness across multiple model runs
+- Agreement with a human-created reference analysis
+- Hallucination and irrelevant-citation rate
+- Time saved for product practitioners
+- Performance on larger or commercially realistic datasets
+
+Those gaps are the current focus of the [backlog](backlog.md); they are not presented as completed outcomes.
+
+## Repository structure
+
+- `app.py` — Streamlit review interface
+- `src/analyse_feedback.py` — prompt construction and LLM analysis
+- `data/sample-feedback.csv` — synthetic source feedback
+- `docs/ai-decisions.md` — product and AI decision record
+- `evaluation/` — evaluation material
+- `examples/` — example outputs
+- `backlog.md` — current experiments and deferred scope
+
+## Status
+
+**v0.2 — Working evidence-linked review prototype**
+
+The next milestone is a documented evaluation baseline comparing repeated model output with a human-created reference analysis.
+
+## About
+
+This is a personal product-management experiment, not production software. Its purpose is to demonstrate product framing, evidence traceability, human oversight and honest evaluation of an AI-assisted workflow.
