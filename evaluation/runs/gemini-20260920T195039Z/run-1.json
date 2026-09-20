@@ -1,0 +1,76 @@
+{
+  "run_metadata": {
+    "benchmark_id": "gemini-20260920T195039Z",
+    "run_id": "gemini-20260920T195039Z-run-1",
+    "run_number": 1,
+    "provider": "Google",
+    "model": "gemini-3.5-flash",
+    "prompt_version": "v1",
+    "prompt_sha256": "592826e7e1082fda74bbbee1ad3c2818d2c3fd644503521ab64f3a18e9d95af9",
+    "dataset": "data/sample-feedback.csv",
+    "record_count": 40,
+    "generated_at": "2026-09-20T19:50:56+00:00",
+    "human_theme_mapping_status": "completed"
+  },
+  "themes": [
+    {
+      "theme": "Manual and time-consuming financial reconciliation",
+      "pain_point": "Finance teams spend excessive time manually exporting, importing, and checking transaction data line-by-line against accounting software and bank records to locate discrepancies and handle refunds.",
+      "evidence_ids": [
+        "F001",
+        "F002",
+        "F005",
+        "F007",
+        "F012",
+        "F014",
+        "F017",
+        "F019",
+        "F025",
+        "F029",
+        "F031",
+        "F035",
+        "F038"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "The lack of direct integrations with accounting packages and automated transaction-matching tools forces finance staff to perform laborious manual verification. While there is a strong desire to eliminate manual line-by-line checks, some users value control and prefer automated discrepancy-highlighting rather than complete, hands-off automation.",
+      "potential_opportunity": "Develop a dedicated reconciliation view that highlights only unmatched transactions, supports clearer refund-to-payment mapping, and allows export/integration options that preserve manual approval control for users.",
+      "contradictory_evidence": [
+        "F021",
+        "F026",
+        "F033",
+        "F006",
+        "F036"
+      ],
+      "theme_id": "T01"
+    },
+    {
+      "theme": "Lack of real-time visibility and proactive alerts for payment issues",
+      "pain_point": "Administrators and managers do not receive immediate or clear alerts when payments fail or remain pending, leading to delayed discovery of issues and anxious customers contacting support to verify transactions.",
+      "evidence_ids": [
+        "F003",
+        "F004",
+        "F008",
+        "F010",
+        "F011",
+        "F016",
+        "F020",
+        "F022",
+        "F023",
+        "F027",
+        "F028",
+        "F032",
+        "F034",
+        "F037",
+        "F040"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "Without automated notifications or clear real-time status updates on the dashboard, teams are reactive, often only discovering failed or stuck payments when customers call or during end-of-month reconciliation.",
+      "potential_opportunity": "Implement real-time failure alerts, push notifications for long-pending payments, more descriptive error reasons on failed transactions, and an exception-focused dashboard or report for managers.",
+      "contradictory_evidence": [
+        "F006",
+        "F023"
+      ],
+      "theme_id": "T02"
+    }
+  ]
+}

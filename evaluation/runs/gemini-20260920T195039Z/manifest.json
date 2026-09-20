@@ -1,0 +1,38 @@
+{
+  "benchmark_id": "gemini-20260920T195039Z",
+  "provider": "Google",
+  "model": "gemini-3.5-flash",
+  "prompt_version": "v1",
+  "prompt_sha256": "592826e7e1082fda74bbbee1ad3c2818d2c3fd644503521ab64f3a18e9d95af9",
+  "dataset": "data/sample-feedback.csv",
+  "record_count": 40,
+  "planned_runs": 3,
+  "created_at": "2026-09-20T19:50:39+00:00",
+  "status": "awaiting_human_mapping_and_scoring",
+  "runs": [
+    {
+      "run_number": 1,
+      "file": "run-1.json",
+      "theme_count": 2,
+      "status": "completed"
+    },
+    {
+      "run_number": 2,
+      "file": "run-2.json",
+      "theme_count": 2,
+      "status": "completed"
+    },
+    {
+      "run_number": 3,
+      "file": "run-3.json",
+      "theme_count": 2,
+      "status": "completed"
+    }
+  ],
+  "notes": [
+    "The API key is not stored in this manifest.",
+    "Raw outputs require human theme mapping before scoring.",
+    "Free-tier Gemini requests may be used by Google to improve its products; this benchmark uses synthetic public data only."
+  ],
+  "completed_at": "2026-09-20T19:51:35+00:00"
+}

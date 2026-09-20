@@ -1,0 +1,56 @@
+{
+  "run_metadata": {
+    "benchmark_id": "gemini-20260920T195039Z",
+    "run_id": "gemini-20260920T195039Z-run-1",
+    "run_number": 1,
+    "provider": "Google",
+    "model": "gemini-3.5-flash",
+    "prompt_version": "v1",
+    "prompt_sha256": "592826e7e1082fda74bbbee1ad3c2818d2c3fd644503521ab64f3a18e9d95af9",
+    "dataset": "data/sample-feedback.csv",
+    "record_count": 40,
+    "generated_at": "2026-09-20T19:50:56+00:00",
+    "human_theme_mapping_status": "completed"
+  },
+  "summary": {
+    "theme_coverage": 0.667,
+    "evidence_precision": 0.964,
+    "reference_evidence_coverage": 0.844,
+    "citation_validity": 1.0,
+    "contradiction_coverage": 0.833
+  },
+  "missing_theme_ids": [
+    "T03"
+  ],
+  "unknown_theme_ids": [],
+  "invalid_citations": [],
+  "distractor_citations": [],
+  "per_theme": [
+    {
+      "theme_id": "T01",
+      "present": true,
+      "evidence_precision": 1.0,
+      "reference_evidence_coverage": 0.812,
+      "minimum_support_met": true
+    },
+    {
+      "theme_id": "T02",
+      "present": true,
+      "evidence_precision": 0.933,
+      "reference_evidence_coverage": 1.0,
+      "minimum_support_met": true
+    },
+    {
+      "theme_id": "T03",
+      "present": false,
+      "evidence_precision": 0.0,
+      "reference_evidence_coverage": 0.0,
+      "minimum_support_met": false
+    }
+  ],
+  "interpretation_notes": [
+    "A valid feedback ID may still be irrelevant; inspect per-theme evidence precision.",
+    "Coverage is measured against a contestable human reference, not absolute truth.",
+    "Usefulness and factual nuance still require human review."
+  ]
+}

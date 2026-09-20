@@ -1,0 +1,80 @@
+{
+  "run_metadata": {
+    "benchmark_id": "gemini-20260920T195039Z",
+    "run_id": "gemini-20260920T195039Z-run-3",
+    "run_number": 3,
+    "provider": "Google",
+    "model": "gemini-3.5-flash",
+    "prompt_version": "v1",
+    "prompt_sha256": "592826e7e1082fda74bbbee1ad3c2818d2c3fd644503521ab64f3a18e9d95af9",
+    "dataset": "data/sample-feedback.csv",
+    "record_count": 40,
+    "generated_at": "2026-09-20T19:51:35+00:00",
+    "human_theme_mapping_status": "completed"
+  },
+  "themes": [
+    {
+      "theme": "Manual and inefficient financial reconciliation processes",
+      "pain_point": "Finance teams spend extensive time and manual effort exporting payment reports to Excel, cross-checking transactions line-by-line against accounting or bank records, and tracking down occasional discrepancies.",
+      "evidence_ids": [
+        "F001",
+        "F002",
+        "F005",
+        "F007",
+        "F012",
+        "F014",
+        "F017",
+        "F019",
+        "F021",
+        "F025",
+        "F026",
+        "F029",
+        "F031",
+        "F035",
+        "F038"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "Finance users are frustrated by redundant manual steps during month-end. They perform tedious comparisons because the system lacks integrated matching or exception highlighting, and they sometimes duplicate efforts when searching for discrepancies.",
+      "potential_opportunity": "Develop native accounting system integrations and an 'exceptions-only' dashboard highlighting mismatched items (such as unmatched refunds or settlement differences) to let users review discrepancies rather than verifying every line manually.",
+      "contradictory_evidence": [
+        "F006",
+        "F015",
+        "F026",
+        "F029",
+        "F033",
+        "F036"
+      ],
+      "theme_id": "T01"
+    },
+    {
+      "theme": "Lack of real-time visibility and proactive alerts for failed or pending payments",
+      "pain_point": "Administrators and managers do not receive immediate or clear status updates on payment failures or long-pending transactions, leading to surprise customer support calls, confusion, and delayed awareness of payment issues.",
+      "evidence_ids": [
+        "F003",
+        "F004",
+        "F008",
+        "F010",
+        "F011",
+        "F016",
+        "F020",
+        "F022",
+        "F023",
+        "F027",
+        "F028",
+        "F032",
+        "F034",
+        "F037",
+        "F040"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "The system acts too passively with payment failures, forcing users to discover issues days later during audits or when customers call. Real-time status transparency is vital for maintaining customer trust and reducing customer service inquiries.",
+      "potential_opportunity": "Implement automated notifications (alerts or emails) for payment failures and prolonged pending statuses, display descriptive reason codes for failures, and introduce a central exception-handling view for managers and administrators.",
+      "contradictory_evidence": [
+        "F006",
+        "F023",
+        "F036"
+      ],
+      "theme_id": "T02"
+    }
+  ]
+}

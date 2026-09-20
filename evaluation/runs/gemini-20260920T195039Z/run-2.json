@@ -1,0 +1,78 @@
+{
+  "run_metadata": {
+    "benchmark_id": "gemini-20260920T195039Z",
+    "run_id": "gemini-20260920T195039Z-run-2",
+    "run_number": 2,
+    "provider": "Google",
+    "model": "gemini-3.5-flash",
+    "prompt_version": "v1",
+    "prompt_sha256": "592826e7e1082fda74bbbee1ad3c2818d2c3fd644503521ab64f3a18e9d95af9",
+    "dataset": "data/sample-feedback.csv",
+    "record_count": 40,
+    "generated_at": "2026-09-20T19:51:16+00:00",
+    "human_theme_mapping_status": "completed"
+  },
+  "themes": [
+    {
+      "theme": "Manual and Time-Consuming Payment Reconciliation",
+      "pain_point": "Finance users spend significant manual effort at month-end exporting, comparing, and reconciling platform payment reports against bank records and external accounting software to find and resolve transaction discrepancies.",
+      "evidence_ids": [
+        "F001",
+        "F002",
+        "F005",
+        "F007",
+        "F012",
+        "F014",
+        "F017",
+        "F019",
+        "F021",
+        "F025",
+        "F026",
+        "F029",
+        "F031",
+        "F035",
+        "F038"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "Finance teams face high administrative overhead because the platform relies on manual line-by-line verification. This process is time-consuming, prone to double-handling when multiple staff members investigate the same discrepancy, and is further complicated by complex transactions such as refunds.",
+      "potential_opportunity": "Develop features that facilitate exception-based reconciliation, such as a unified screen highlighting mismatched or unmatched transactions, or direct accounting package integrations that retain manual review and approval controls.",
+      "contradictory_evidence": [
+        "F015",
+        "F029",
+        "F033"
+      ],
+      "theme_id": "T01"
+    },
+    {
+      "theme": "Delayed Visibility and Status Ambiguity of Failed or Pending Payments",
+      "pain_point": "Administrators and managers lack real-time notifications or clear status indicators when online payments fail or remain pending, which leads to missed failures, duplicate efforts, and customer confusion.",
+      "evidence_ids": [
+        "F003",
+        "F004",
+        "F008",
+        "F010",
+        "F011",
+        "F013",
+        "F016",
+        "F020",
+        "F022",
+        "F023",
+        "F027",
+        "F028",
+        "F032",
+        "F034",
+        "F037",
+        "F040"
+      ],
+      "evidence_strength": "Strong",
+      "interpretation": "The lack of proactive system notifications forces internal teams into a reactive posture where they only find out about failed payments days later during manual audits or after customers contact support due to their own uncertainty.",
+      "potential_opportunity": "Introduce real-time alerts or dashboard notifications for failed and long-pending payments, display clear failure reasons, and provide a dedicated exception report dashboard summarizing transactions that require immediate action.",
+      "contradictory_evidence": [
+        "F006",
+        "F023",
+        "F036"
+      ],
+      "theme_id": "T02"
+    }
+  ]
+}
