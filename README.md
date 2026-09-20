@@ -94,6 +94,9 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 - Editable interpretation
 - Review export
 - Public static review workflow
+- Human-created reference analysis for the 40-record dataset
+- Transparent scoring for theme coverage, citation validity, evidence relevance and contradiction coverage
+- Deterministic scorer fixture and controlled-run protocol
 
 ### Not yet validated
 
@@ -104,6 +107,12 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 - Performance on larger or commercially realistic datasets
 
 Those gaps are the current focus of the [backlog](backlog.md); they are not presented as completed outcomes.
+
+## Evaluation baseline
+
+The [evaluation workspace](evaluation/README.md) contains a documented human reference, inspectable scoring rules and a protocol for repeated model runs. It deliberately separates valid citations from relevant evidence and reports missed themes and contradictory evidence independently.
+
+The included fixture verifies the scorer only. It is not presented as model-performance evidence. Controlled repeated runs are the next experiment.
 
 ## Repository structure
 
@@ -117,9 +126,9 @@ Those gaps are the current focus of the [backlog](backlog.md); they are not pres
 
 ## Status
 
-**v0.2 — Working evidence-linked review prototype**
+**v0.3 — Evaluation baseline implemented**
 
-The next milestone is a documented evaluation baseline comparing repeated model output with a human-created reference analysis.
+The next milestone is three controlled model runs against the fixed dataset and prompt, followed by transparent reporting of variation and failure modes.
 
 ## About
 
