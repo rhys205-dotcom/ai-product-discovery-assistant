@@ -32,7 +32,7 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 
 ### Run repeated analyses
 
-Run the unchanged dataset and prompt at least three times, recording the model and prompt version with every raw result.
+A secure Gemini benchmark runner is implemented and limited to exactly three calls. Run it with a private `GEMINI_API_KEY`; it records the unchanged dataset, model, prompt version, prompt hash and timestamps with every raw result.
 
 **Why:** One convincing output does not demonstrate repeatability.
 
