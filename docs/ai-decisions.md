@@ -324,6 +324,6 @@ These questions will be revisited as the prototype develops.
 | Structured outputs | Preferred | Implemented |
 | RAG | Not required for MVP | Deferred pending evidence |
 | Embeddings | Not required for MVP | Deferred pending evidence |
-| Evaluation framework | Required | In progress for v0.3 |
+| Evaluation framework | Human reference and transparent scorer | Baseline implemented; controlled runs pending |
 
 This document will evolve as the product is tested and new evidence becomes available.
