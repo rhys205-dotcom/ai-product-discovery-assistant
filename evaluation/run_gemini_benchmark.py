@@ -9,10 +9,15 @@ matching and qualitative review remain explicit human-review steps.
 import hashlib
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from google import genai
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.analyse_feedback import build_prompt, load_feedback
 
