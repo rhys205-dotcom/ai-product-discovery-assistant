@@ -8,30 +8,34 @@
   "record_count": 40,
   "planned_runs": 3,
   "created_at": "2026-09-20T19:50:39+00:00",
-  "status": "awaiting_human_mapping_and_scoring",
+  "status": "completed",
+  "human_theme_mapping_status": "completed",
   "runs": [
     {
       "run_number": 1,
       "file": "run-1.json",
+      "score_file": "run-1-score.json",
       "theme_count": 2,
-      "status": "completed"
+      "status": "human_mapped_and_scored"
     },
     {
       "run_number": 2,
       "file": "run-2.json",
+      "score_file": "run-2-score.json",
       "theme_count": 2,
-      "status": "completed"
+      "status": "human_mapped_and_scored"
     },
     {
       "run_number": 3,
       "file": "run-3.json",
+      "score_file": "run-3-score.json",
       "theme_count": 2,
-      "status": "completed"
+      "status": "human_mapped_and_scored"
     }
   ],
   "notes": [
     "The API key is not stored in this manifest.",
-    "Raw outputs require human theme mapping before scoring.",
+    "All raw outputs were human-mapped to the documented reference before scoring.",
     "Free-tier Gemini requests may be used by Google to improve its products; this benchmark uses synthetic public data only."
   ],
   "completed_at": "2026-09-20T19:51:35+00:00"
