@@ -20,39 +20,31 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 - Capture review notes and export the reviewed result as JSON.
 - Publish a static public review workflow using pre-generated analysis and synthetic data.
 
-## Now — v0.3: Evaluation baseline
+## Completed — v0.3: Evaluation baseline
 
-### Create a human reference analysis
+- Created a human reference analysis covering themes, supporting evidence, qualifying evidence and deliberate distractors.
+- Added a dependency-free scoring script with explicit, inspectable rules.
+- Separated theme coverage, citation validity, evidence relevance, reference coverage and contradiction coverage.
+- Added a deterministic fixture to verify the scorer without presenting it as model performance.
+- Defined a controlled protocol for repeated model runs.
 
-Manually identify the important themes, supporting records, contradictions and irrelevant feedback in the synthetic dataset.
-
-**Why:** Model output cannot be evaluated without a documented comparison point.
-
-**Success looks like:** A reviewer can see where the model agreed with, missed or departed from the human analysis.
+## Now — v0.3: Controlled benchmark
 
 ### Run repeated analyses
 
-Run the same dataset and prompt several times and retain the results.
+Run the unchanged dataset and prompt at least three times, recording the model and prompt version with every raw result.
 
 **Why:** One convincing output does not demonstrate repeatability.
 
-**Success looks like:** Variation in themes, citations and unsupported claims is visible rather than anecdotal.
+**Success looks like:** Variation in themes, citations, missed evidence and unsupported claims is visible rather than anecdotal.
 
-### Score evidence faithfulness
+### Review and report the scores
 
-For each finding, check whether the cited records genuinely support the claim and whether important contradictory evidence was omitted.
+Map generated themes to the human reference through explicit human review, run the scorer and inspect qualitative failure modes alongside the numbers.
 
-**Why:** Valid IDs are not necessarily relevant evidence.
+**Why:** Automated scores cannot determine whether a finding is useful or whether the human reference itself is contestable.
 
-**Success looks like:** The project reports supported findings, irrelevant citations and unsupported claims separately.
-
-### Measure coverage
-
-Compare generated findings with the human reference analysis.
-
-**Why:** A cautious model may avoid hallucination while still missing important customer problems.
-
-**Success looks like:** Material missed themes are recorded alongside correctly identified themes.
+**Success looks like:** Every run is reported, including weak outputs, with a documented decision about the next experiment.
 
 ## Next — v0.4: Comparison and usability
 
