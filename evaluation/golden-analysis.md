@@ -1,158 +1,116 @@
-# Golden Analysis — v0.2 Reference
+# Human Reference Analysis — v1.0
 
-## Purpose
+## Purpose and source of truth
 
-This document defines a human-reviewed reference analysis for the synthetic customer feedback dataset.
+This document is the readable explanation of the human reference used to evaluate the 40-record synthetic feedback dataset.
 
-It provides a baseline against which future AI-generated analyses can be evaluated.
+The machine-readable [`reference-analysis.json`](reference-analysis.json) is the scoring source of truth. It was created before the controlled Gemini benchmark. This narrative mirrors its three themes, evidence sets, qualifying evidence and deliberate distractors.
 
-The reference is deliberately created before automated model evaluation so that the expected result is not changed to match whatever the model produces.
+The reference is a documented human judgement rather than objective ground truth. Theme boundaries can overlap, and future reviewers should record disagreement rather than silently changing the baseline.
 
 ---
 
-# Expected Theme 1 — Manual reconciliation and exception handling
+## T01 — Manual reconciliation and exception handling
 
 **Expected strength:** Strong
 
-## Core customer problem
+### Core customer problem
 
-Finance users spend significant time manually reconciling payment activity and identifying discrepancies.
+Finance users spend substantial time reconciling payment data with bank and accounting records, while exceptions, refunds and shared investigations make discrepancies difficult to resolve.
 
-## Key evidence
+### Required evidence
 
-`F001` `F002` `F005` `F007` `F012` `F014` `F017` `F019` `F021` `F025` `F026` `F029` `F031` `F035` `F038`
+`F001` `F002` `F005` `F007` `F012` `F014` `F017` `F019` `F021` `F025` `F026` `F029` `F031` `F033` `F035` `F038`
 
-## Important nuance
+**Minimum support:** Four records
 
-The evidence supports reducing manual reconciliation effort.
+### Qualifying evidence
 
-It does **not** support assuming that users want fully autonomous reconciliation.
+`F006` `F026` `F029` `F033` `F036`
 
-`F026` explicitly prefers exception highlighting to full automation.
-
-`F033` provides additional evidence that users want human control over financial adjustments.
-
-## Expected interpretation
-
-A strong analysis should identify an opportunity around:
-
-**exception-based reconciliation and discrepancy identification while preserving human oversight.**
+The evidence supports reducing manual reconciliation effort. It does **not** support assuming that users want fully autonomous reconciliation. A strong analysis should preserve review and approval while helping users identify exceptions.
 
 ---
 
-# Expected Theme 2 — Payment failure and status visibility
+## T02 — Delayed visibility of failed or pending payments
 
 **Expected strength:** Strong
 
-## Core customer problem
+### Core customer problem
 
-Operational users do not always know when payments fail, remain pending or require intervention.
+Administrators and managers often discover failed or pending payments late, sometimes only after a customer contacts them, and need clearer status, reasons and proactive alerts.
 
-## Key evidence
+### Required evidence
 
-`F003` `F004` `F008` `F010` `F016` `F022` `F023` `F027` `F028` `F034` `F037` `F040`
+`F003` `F004` `F008` `F010` `F011` `F016` `F020` `F022` `F023` `F027` `F028` `F032` `F034` `F040`
 
-## Expected interpretation
+**Minimum support:** Four records
 
-A strong analysis should identify the underlying need as **payment-state visibility**, rather than simply repeating the requested solution of "send notifications."
+### Qualifying evidence
 
-Possible opportunities may include:
+`F006` `F023` `F036`
 
-- proactive exception alerts
-- clearer payment states
-- failure reasons
-- better payment history
-
-The analysis should not assume which solution should be built.
+A strong analysis should identify the underlying need as actionable payment-state visibility rather than simply repeat a requested solution such as sending notifications. The evidence does not support claiming that all payment-status information is unclear.
 
 ---
 
-# Secondary Signal — Customer contact caused by payment uncertainty
+## T03 — Payment communication and audit history
 
-## Relevant evidence
+**Expected strength:** Secondary but recurring
 
-`F008` `F020` `F028` `F032`
+### Core customer problem
 
-There is evidence that unclear payment status can contribute to customer contact.
+Teams need a clearer record of payment events and customer communications to avoid duplicate reminders and answer disputes or status questions consistently.
 
-This may be treated as:
+### Required evidence
 
-- a consequence of the payment-status theme, or
-- a secondary theme
+`F008` `F013` `F022` `F032` `F037`
 
-Either interpretation can be acceptable if supported by evidence.
+**Minimum support:** Three records
 
-It should not automatically be treated as a separate roadmap opportunity.
+### Qualifying evidence
+
+`F023`
+
+This theme overlaps with payment-status visibility but represents a distinct need for history and traceability. A useful analysis may recognise the relationship while keeping the customer problem separately visible.
 
 ---
 
-# Signals that should NOT become major themes
+## Deliberate distractors
 
-The following requests are deliberately included as noise or isolated preferences:
+The dataset contains isolated requests that should not become major themes:
 
-`F009` — Dark mode  
-`F024` — Additional dashboard colours  
-`F030` — Receipt logo customisation  
-`F039` — Larger font size
+- `F009` — dark mode
+- `F018` — isolated preference not part of a recurring problem
+- `F024` — additional dashboard colours
+- `F030` — receipt logo customisation
+- `F039` — larger font size
 
 A model should not present these as significant recurring customer problems based on this dataset.
 
 ---
 
-# Acceptable variation
+## Acceptable variation
 
-The AI does not need to reproduce the exact wording or exact grouping used in this document.
+The model does not need to reproduce the exact wording used here. A useful analysis may use different labels or problem-statement wording, provided that it:
 
-A useful analysis may:
-
-- combine closely related themes
-- identify legitimate secondary patterns
-- use different problem-statement wording
-- propose different opportunities
-
-The important requirement is that conclusions remain supported by the source evidence.
+- identifies materially distinct customer problems;
+- cites evidence that genuinely supports the mapped theme;
+- does not elevate isolated distractors;
+- preserves important qualifying evidence;
+- separates customer evidence from interpretation and proposed action.
 
 ---
 
-# Evaluation criteria
+## Evaluation dimensions
 
-Future AI runs will be assessed against five dimensions.
-
-## 1. Theme coverage
-
-Did the model identify the two dominant customer problems?
-
-## 2. Evidence precision
-
-Do the cited feedback records genuinely support the theme?
-
-## 3. Evidence recall
-
-Did the model identify a reasonable proportion of the relevant evidence?
-
-## 4. Unsupported themes
-
-Did the model elevate isolated or weak signals into major findings?
-
-## 5. Nuance
-
-Did the model recognise that reducing manual reconciliation does not necessarily mean removing human control?
-
----
-
-# Initial scoring approach
-
-Each AI run can be recorded using:
-
-| Measure | Result |
+| Measure | Question |
 |---|---|
-| Reconciliation theme identified | Yes / Partial / No |
-| Payment-status theme identified | Yes / Partial / No |
-| Evidence references valid | Percentage |
-| Major unsupported themes | Count |
-| Isolated requests incorrectly promoted | Count |
-| Automation/control nuance recognised | Yes / Partial / No |
+| Theme coverage | How many of the three reference themes were identified? |
+| Citation validity | Do cited feedback IDs exist in the dataset? |
+| Evidence precision | Do valid citations support the matched theme? |
+| Reference evidence coverage | How much of the documented reference evidence was found? |
+| Contradiction coverage | Was expected qualifying evidence surfaced? |
+| Distractor citations | Were isolated requests incorrectly promoted as core evidence? |
 
-This scoring approach is intentionally simple for the first experiment.
-
-The objective is to establish a repeatable evaluation baseline before introducing more sophisticated evaluation techniques.
+Human mapping remains explicit because deciding whether differently worded themes represent the same underlying customer problem is a judgement, not an objective string-matching task.
