@@ -265,6 +265,37 @@ Prompt changes should therefore be evaluated in much the same way as other chang
 
 ---
 
+## Decision 11 — Improve theme separation before adding retrieval architecture
+
+### Evidence
+
+The first controlled benchmark held the 40-record dataset, `gemini-3.5-flash` model and prompt version `v1` constant across three runs.
+
+The benchmark measured:
+
+- 100% citation validity
+- 95.5% mean evidence precision
+- 88.5% mean reference evidence coverage
+- 66.7% mean theme coverage
+
+All three runs identified the two dominant themes but missed the smaller payment communication and audit-history theme. Relevant records were generally retrieved but were grouped into a broader payment-status theme.
+
+### Decision
+
+The next experiment will test a separately versioned prompt that asks the model to distinguish related but independently actionable customer problems.
+
+The dataset, model and three-run protocol will remain fixed so the prompt comparison is interpretable. Prompt `v1` and its results will remain unchanged as the baseline.
+
+RAG, embeddings and vector storage remain deferred.
+
+### Why
+
+The measured limitation is theme separation rather than missing source retrieval. Adding retrieval architecture would increase complexity without addressing the failure observed in the benchmark.
+
+The prompt experiment should improve theme coverage without materially reducing citation validity or evidence precision. If later evaluation shows that relevant evidence is not being retrieved—particularly on larger datasets—retrieval architecture can be reconsidered.
+
+---
+
 # Current Architecture Principle
 
 The initial architecture should be the simplest architecture capable of testing the product hypothesis.
@@ -322,8 +353,9 @@ These questions will be revisited as the prototype develops.
 | Model confidence scores | Avoid | Accepted |
 | Synthetic data | Use for public prototype | Implemented |
 | Structured outputs | Preferred | Implemented |
-| RAG | Not required for MVP | Deferred pending evidence |
-| Embeddings | Not required for MVP | Deferred pending evidence |
-| Evaluation framework | Human reference and transparent scorer | Baseline implemented; controlled runs pending |
+| RAG | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
+| Embeddings | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
+| Evaluation framework | Human reference, transparent scorer and repeated runs | First controlled three-run benchmark completed in v0.4 |
+| Prompt iteration | Compare a versioned prompt against the fixed v1 baseline | Next experiment |
 
 This document will evolve as the product is tested and new evidence becomes available.
