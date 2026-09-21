@@ -4,7 +4,7 @@
 
 Three independent analyses were run against the unchanged 40-record synthetic feedback dataset using `gemini-3.5-flash`, prompt version `v1`.
 
-Each generated theme was manually mapped to the documented human reference before scoring. All three runs are reported; no run was excluded or selected as the preferred result.
+Each generated theme was manually mapped to the documented human reference before scoring. The stored run files contain the generated findings plus the added `theme_id` annotation used for scoring. All three runs are reported; no run was excluded or selected as the preferred result.
 
 ## Results
 
@@ -37,6 +37,14 @@ Across all runs:
 The model occasionally treated valid records as contradictory when they were not. For example, `F015` was misclassified as contradictory in runs 2 and 3.
 
 The contradiction-coverage metric measures whether expected qualifying evidence was found, but does not penalise irrelevant items added to the contradictory-evidence list. This remains a limitation of the current scorer and demonstrates why automated scores still require qualitative review.
+
+## Scope and limitations
+
+Three runs provide an initial repeatability check, not statistically robust evidence of general model performance. The benchmark uses one synthetic dataset, one model and one prompt version.
+
+The human reference is contestable, and the current scorer does not measure every qualitative error. In particular, contradiction coverage rewards expected qualifying evidence but does not penalise irrelevant additions.
+
+For future experiments, the unmodified model response should be preserved separately from human mapping and calculated scores.
 
 ## Decision
 
