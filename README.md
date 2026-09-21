@@ -119,7 +119,7 @@ Those gaps are the current focus of the [backlog](backlog.md); they are not pres
 
 ## Evaluation
 
-The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, raw model outputs, human mappings and per-run scores.
+The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, generated model outputs with explicit human annotations and per-run scores.
 
 The first controlled benchmark keeps the dataset, prompt and model fixed across three runs. It reports every run rather than selecting the strongest output and records both quantitative scores and qualitative failure modes. The API key is never written to the repository.
 
@@ -129,7 +129,7 @@ The first controlled benchmark keeps the dataset, prompt and model fixed across 
 - `src/analyse_feedback.py` — prompt construction and LLM analysis
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — reference, runner, raw benchmark outputs and scores
+- `evaluation/` — reference, runner, annotated benchmark outputs and scores
 - `examples/` — example outputs
 - `backlog.md` — current experiments and deferred scope
 
