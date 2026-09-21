@@ -28,36 +28,51 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 - Added a deterministic fixture to verify the scorer without presenting it as model performance.
 - Defined a controlled protocol for repeated model runs.
 
-## Now — v0.3: Controlled benchmark
+## Completed — v0.4: First controlled benchmark
 
-### Run repeated analyses
+- Ran three Gemini analyses with the 40-record dataset, model and prompt version held constant.
+- Recorded the provider, model, prompt hash, prompt version and timestamps.
+- Human-mapped every generated theme to the documented reference before scoring.
+- Reported every run rather than selecting a preferred result.
+- Measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage.
+- Identified a repeatable failure: all three runs missed the smaller payment communication and audit-history theme.
+- Deferred RAG because the evidence indicates a theme-separation problem rather than a retrieval problem.
 
-A secure Gemini benchmark runner is implemented and limited to exactly three calls. Run it with a private `GEMINI_API_KEY`; it records the unchanged dataset, model, prompt version, prompt hash and timestamps with every raw result.
+## Now — v0.5: Controlled prompt comparison
 
-**Why:** One convincing output does not demonstrate repeatability.
+### Hypothesis
 
-**Success looks like:** Variation in themes, citations, missed evidence and unsupported claims is visible rather than anecdotal.
+A prompt that explicitly asks the model to distinguish related but independently actionable customer problems will improve coverage of the smaller communication and audit-history theme without materially reducing evidence quality.
 
-### Review and report the scores
+### Experimental controls
 
-Map generated themes to the human reference through explicit human review, run the scorer and inspect qualitative failure modes alongside the numbers.
+- Preserve prompt `v1` and the v0.4 results unchanged.
+- Create a separately versioned prompt `v2`.
+- Keep the dataset, model and three-run protocol fixed.
+- Preserve the unmodified model response separately from human mapping and calculated scores.
+- Report all runs, including weak or failed outputs.
 
-**Why:** Automated scores cannot determine whether a finding is useful or whether the human reference itself is contestable.
+### Success criteria
 
-**Success looks like:** Every run is reported, including weak outputs, with a documented decision about the next experiment.
+- Identify `T03` in at least two of three runs.
+- Maintain 100% citation validity.
+- Keep evidence precision at or above 93%, the lowest v1 run.
+- Do not promote a deliberate distractor into a core theme.
+- Record qualitative failure modes and any regression, not only the headline averages.
 
-## Next — v0.4: Comparison and usability
+The experiment will provide evidence about prompt behaviour on this fixed dataset. It will not establish general performance across different datasets or models.
 
-- Record prompt and model version with every analysis.
-- Compare prompt variants against the same reference dataset.
+## Next — usability and generalisation
+
 - Preserve reviewer edits as structured evaluation data.
 - Test whether the workflow saves time for a product practitioner.
+- Test a larger and more diverse synthetic dataset.
+- Compare model variants only after the prompt experiment is complete.
 - Improve error handling for malformed or oversized uploads.
 - Add screenshots or a short walkthrough to the repository.
 
 ## Later — only if evidence supports it
 
-- Test larger and more diverse datasets.
 - Add retrieval or embeddings if direct analysis no longer returns relevant evidence reliably.
 - Explore configurable evidence-strength rules.
 - Test multi-reviewer agreement.
@@ -76,4 +91,4 @@ Map generated themes to the human reference through explicit human review, run t
 
 > Can an LLM help a product practitioner analyse qualitative feedback faster while preserving evidence traceability and human judgment?
 
-The next release should answer part of that question with measured results, not additional demo features.
+The next release will test a diagnosed failure mode through a controlled prompt comparison rather than adding more demo features.
