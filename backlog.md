@@ -35,113 +35,149 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 - Human-mapped every generated theme to the documented reference before scoring.
 - Reported every run rather than selecting a preferred result.
 - Measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage.
-- Identified a repeatable failure: all three runs missed the smaller payment communication and audit-history theme.
-- Deferred RAG because the evidence indicates a theme-separation problem rather than a retrieval problem.
+- Identified a repeatable result: all three runs omitted the smaller payment communication and audit-history reference theme.
+- Kept retrieval infrastructure deferred because all 40 records are supplied directly to the model and no measured retrieval problem currently justifies RAG.
 
-## Completed — product red-team
+## Completed — broader red-team review
 
-A broader product red-team was carried out after the first benchmark. It found that the original benchmark is useful but too narrow to assess several important failure modes.
+A broader product review found that the first benchmark is useful but too narrow on its own. It also identified two important distinctions:
 
-Priority risks identified include:
+- reproducing the three-theme human reference is not automatically the same as producing the best product analysis;
+- the practical product hypothesis — whether a practitioner can reach a useful, defensible analysis faster — remains untested.
 
-- prompt injection embedded inside customer feedback;
-- duplicate or blank feedback IDs breaking traceability;
-- stale analysis remaining visible after the underlying dataset changes;
-- duplicate feedback manufacturing false consensus;
-- evidence-strength labels overstating weak or narrow evidence;
-- unsupported embellishment inside otherwise valid themes;
-- neutral evidence being misclassified as contradictory;
-- low-frequency but high-severity signals being hidden by frequency-based theme detection;
-- related problems being over-merged;
-- one problem being over-fragmented into several artificial themes.
+The review also exposed concrete trust and evaluation risks, including duplicate/blank IDs, stale analysis after a dataset change, scorer blind spots around unmatched findings, narrow evidence being presented too strongly, unsupported embellishment, prompt injection, false contradiction and over-merging/over-fragmentation.
 
-This changed the next milestone. The project will establish behaviour across these failure modes before optimising the prompt against the known 40-record benchmark.
+This changes the sequence of work. The project will repair the evaluation and trust foundation first, then run a compact behavioural baseline and practitioner validation before investing in more evaluation depth.
 
-## Now — v0.5: Red-team evaluation suite
+# Revised roadmap
+
+## Step 1 — Repair the evaluation foundation — NOW
 
 ### Objective
 
-Create a compact adversarial evaluation suite that tests whether the current product remains evidence-faithful and safe enough for human-assisted discovery when the inputs are ambiguous, conflicting, duplicated, malformed or adversarial.
+Make sure the project can state precisely what existing results do and do not establish.
 
-### Baseline rule
+### Work
 
-Freeze the current prompt and behaviour as the baseline. Run the suite before fixing the diagnosed weaknesses so failures are recorded rather than designed away retrospectively.
+- Review the three-theme human reference with at least one independent product practitioner who has not seen the expected theme structure.
+- Treat the human reference as a contestable judgement, not ground truth.
+- Fix scorer blind spots so unmatched findings and their citations cannot disappear from headline checks.
+- Score citation relevance at the finding–citation relationship level rather than only through aggregated unique IDs.
+- Ensure additional or duplicate theme mappings cannot silently escape evaluation.
+- Choose the current application configuration as the baseline for future prompt comparisons; retain the historical Gemini benchmark as a separately labelled experiment.
+- Align public-demo and repository wording so illustrative sample output is clearly distinguished from measured benchmark output.
 
-### Planned cases
+### Completion condition
 
-The first suite will contain roughly 15 deliberately small test cases covering:
+The project can explain exactly what each published metric measures, what it misses and why the human reference is useful without presenting it as objective truth.
 
-1. the existing 40-record benchmark;
-2. no meaningful recurring pattern;
-3. a smaller recurring theme at risk of being swamped;
-4. two similar but independently actionable problems;
-5. one underlying problem expressed through several requested solutions;
-6. genuine disagreement about automation;
-7. neutral or non-applicable evidence that should not be treated as contradiction;
-8. duplicated feedback that should not manufacture consensus;
-9. evidence dominated by one persona or source;
-10. prompt injection embedded in a feedback record;
-11. a correct theme with tempting unsupported statistics or causal claims;
-12. a low-frequency but high-severity signal;
-13. isolated cosmetic requests that should remain noise;
-14. duplicate or blank feedback IDs that break traceability;
-15. an analysis generated from dataset A remaining visible after switching to dataset B.
+## Step 2 — Capture and fix trust failures
 
-### Initial scoring
+### Objective
 
-Keep the first red-team framework deliberately lightweight. For each case record:
+Protect the core product promise: evidence must not become detached from the dataset or reviewer decision that produced it.
 
-- **Coverage** — did the analysis identify what mattered?
-- **Groundedness** — are substantive claims supported by the supplied evidence?
-- **Evidence integrity** — are citations relevant and traceable?
-- **Qualification** — are disagreement, uncertainty and important limits preserved?
-- **Behavioural integrity** — does the product resist injection, duplication, stale state and malformed inputs?
-- **Outcome** — Pass / Partial / Fail.
-- **Failure severity** — Low / Medium / High.
+### Work
 
-Manual review is acceptable at this stage. The objective is to expose product failure modes, not to build a large automated eval platform.
+Record the current failures first, then fix them promptly. Completing every model red-team case is not a prerequisite.
 
-## Next — v0.6: Targeted improvements
+- Reject blank and duplicate feedback IDs before analysis.
+- Bind dataset identity, model analysis and review state together.
+- Invalidate stale findings and review decisions when the dataset or analysis changes.
+- Add basic structured-response validation so malformed or incomplete model output cannot appear as a valid analysis.
+- Preserve original model output separately from reviewer edits.
+- Include dataset/run provenance in reviewed exports.
+- Ensure failed model calls and invalid responses are recorded as outcomes rather than silently leaving stale state.
 
-Prioritise changes using the observed baseline failures rather than fixing every theoretical weakness.
+### Completion condition
 
-Likely areas include:
+Findings and human decisions cannot silently acquire the wrong source evidence, and exported review artefacts preserve where the analysis came from and what the reviewer changed.
 
-- dataset validation and unique-ID enforcement;
-- binding an analysis to the dataset that produced it and invalidating stale results;
-- stronger separation of instructions from untrusted feedback content;
-- revised treatment of evidence strength and source diversity;
-- improved theme separation without creating over-fragmentation;
-- stronger handling of unsupported claims and false contradictions;
-- clearer treatment of low-frequency/high-severity signals;
-- making the proposed opportunity as reviewable as the interpretation.
+## Step 3 — Run the compact behavioural baseline
 
-The previously planned `v2` prompt comparison remains useful, but it becomes one targeted intervention inside this milestone rather than the whole milestone.
+### Objective
 
-## Then — v0.7: Regression evaluation
+Use the existing red-team suite to establish how the current application behaves across meaningful failure modes without turning the project into an eval platform.
 
-Rerun the same red-team suite after the targeted changes.
+### Work
 
-Compare before and after behaviour, including regressions. Do not report only aggregate improvements: preserve high-severity failures and qualitative differences between versions.
+- Keep the approximately 15-case suite because the datasets and runner already exist.
+- Sharpen E06 so it tests genuinely opposing preferences about the same automated action.
+- Rewrite E09 so narrow representation is not confounded with exact duplicate wording.
+- Define E12 as an **isolated signal requiring investigation**, not a recurring theme.
+- Add simple checks for malformed responses, failed calls and export integrity.
+- Make acceptance criteria concrete for each case: what must be present, what must not happen, acceptable variation and supporting evidence.
+- Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
+- Repeat important model cases, including apparent passes, before drawing stronger conclusions.
 
-If the number of runs becomes large enough to justify it, store structured results in SQLite and use SQL to answer practical product questions such as:
+### Completion condition
 
-- Which failure modes improved or regressed?
-- Which high-severity failures remain?
-- Does improved theme separation create more fragmentation?
-- Are failures consistent or intermittent across repeated runs?
+The important behavioural failures have inspectable examples, clear severity and enough repeated evidence to prioritise a bounded improvement cycle.
 
-SQL is supporting analysis here, not a separate portfolio project.
+## Step 4 — One bounded improvement cycle + practitioner validation
 
-## Later — usability and generalisation
+### Objective
 
-- Preserve reviewer edits as structured evaluation data.
-- Test whether the workflow saves time for a product practitioner.
-- Test larger and more diverse synthetic datasets.
-- Compare model variants after behaviour is better understood.
-- Test multi-reviewer agreement.
-- Add retrieval or embeddings only if direct analysis no longer returns relevant evidence reliably.
-- Investigate integrations only after the core review workflow proves useful.
+Improve the most consequential observed weaknesses while testing whether the workflow actually helps the intended user.
+
+### Product improvements
+
+Prioritise observed failures rather than theoretical completeness. Likely interventions include:
+
+- prompt-injection handling;
+- evidence-strength presentation based on observable support and source breadth;
+- groundedness and contradiction handling;
+- theme separation without over-fragmentation;
+- making potential opportunities editable/challengeable;
+- allowing a reviewer to record a missing observation and inspect uncited records.
+
+Prompt `v2` belongs here. Compare it across the separation and fragmentation cases together rather than tuning it only to recover the known payment theme.
+
+### Practitioner validation
+
+Run approximately three short sessions with PMs, POs or BAs. Use comparable tasks and, where practical, vary task order or dataset to reduce familiarity effects.
+
+Measure directionally:
+
+- time to a reviewed, usable output;
+- important problems missed;
+- unsupported claims retained;
+- whether the participant can explain and defend the resulting conclusions;
+- what they corrected, rejected or added.
+
+Acceptance rate alone is not a success measure because high acceptance can represent either useful output or uncritical trust.
+
+### Completion condition
+
+There is evidence about both product behaviour and whether practitioners gain a useful quality or time advantage. If they do not, narrow or stop further feature work rather than adding more evaluation machinery.
+
+## Step 5 — Recheck and publish
+
+### Objective
+
+Close the learning loop and turn the work into a concise product case study.
+
+### Work
+
+- Rerun the same behavioural cases after the bounded improvement cycle.
+- Preserve regressions and remaining high-severity failures, not only improvements.
+- Use one fresh holdout dataset with different language or subject matter that has not been repeatedly tuned against.
+- If the holdout is used to improve the product, treat it as development data and create another holdout before making generalisation claims.
+- Summarise practitioner findings without overstating three sessions as general proof.
+- Publish a concise before/after account: what changed, why it mattered, whether reviewers benefited and what still failed.
+
+### Completion condition
+
+The portfolio claims match the evidence, remaining weaknesses are visible, and any further work has a clear product reason.
+
+## Evaluation principles from this point
+
+- The current OpenAI-backed application configuration is the baseline for future before/after experiments; the Gemini benchmark remains historical evidence rather than a directly comparable baseline.
+- The human reference is useful for repeatability but remains contestable.
+- Theme count is not a quality target: useful distinctions may be top-level themes or subthemes depending on the product decision they support.
+- RAG remains deferred because retrieval infrastructure is not presently justified; this is not a claim that retrieval has been proven reliable.
+- SQL is optional supporting analysis. Introduce SQLite/SQL only when recurring questions across versions, cases and runs become awkward in JSON/CSV.
+- Do not build a standalone SQL portfolio project or a large AI-evaluation platform.
 
 ## Not building yet
 
@@ -150,12 +186,12 @@ SQL is supporting analysis here, not a separate portfolio project.
 - Unsupervised product decisions
 - Production-scale infrastructure
 - Customer-data integrations
-- RAG or vector storage without an evaluated retrieval problem
+- RAG or vector storage without a demonstrated retrieval problem
 - A standalone SQL portfolio project
 - A large AI-eval engineering platform
 
 ## Current product question
 
-> Can an LLM help a product practitioner analyse qualitative feedback faster while preserving evidence traceability, calibrated interpretation and human judgement across realistic failure modes?
+> Can an LLM help a product practitioner reach a useful, defensible analysis of qualitative feedback faster while preserving evidence traceability and human judgement?
 
-The next release will establish a red-team baseline before making targeted improvements.
+The next portfolio milestone is not a larger benchmark. It is a completed learning cycle showing what failed, what changed, whether practitioners benefited and what remains uncertain.
