@@ -38,44 +38,109 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 - Identified a repeatable failure: all three runs missed the smaller payment communication and audit-history theme.
 - Deferred RAG because the evidence indicates a theme-separation problem rather than a retrieval problem.
 
-## Now — v0.5: Controlled prompt comparison
+## Completed — product red-team
 
-### Hypothesis
+A broader product red-team was carried out after the first benchmark. It found that the original benchmark is useful but too narrow to assess several important failure modes.
 
-A prompt that explicitly asks the model to distinguish related but independently actionable customer problems will improve coverage of the smaller communication and audit-history theme without materially reducing evidence quality.
+Priority risks identified include:
 
-### Experimental controls
+- prompt injection embedded inside customer feedback;
+- duplicate or blank feedback IDs breaking traceability;
+- stale analysis remaining visible after the underlying dataset changes;
+- duplicate feedback manufacturing false consensus;
+- evidence-strength labels overstating weak or narrow evidence;
+- unsupported embellishment inside otherwise valid themes;
+- neutral evidence being misclassified as contradictory;
+- low-frequency but high-severity signals being hidden by frequency-based theme detection;
+- related problems being over-merged;
+- one problem being over-fragmented into several artificial themes.
 
-- Preserve prompt `v1` and the v0.4 results unchanged.
-- Create a separately versioned prompt `v2`.
-- Keep the dataset, model and three-run protocol fixed.
-- Preserve the unmodified model response separately from human mapping and calculated scores.
-- Report all runs, including weak or failed outputs.
+This changed the next milestone. The project will establish behaviour across these failure modes before optimising the prompt against the known 40-record benchmark.
 
-### Success criteria
+## Now — v0.5: Red-team evaluation suite
 
-- Identify `T03` in at least two of three runs.
-- Maintain 100% citation validity.
-- Keep evidence precision at or above 93%, the lowest v1 run.
-- Do not promote a deliberate distractor into a core theme.
-- Record qualitative failure modes and any regression, not only the headline averages.
+### Objective
 
-The experiment will provide evidence about prompt behaviour on this fixed dataset. It will not establish general performance across different datasets or models.
+Create a compact adversarial evaluation suite that tests whether the current product remains evidence-faithful and safe enough for human-assisted discovery when the inputs are ambiguous, conflicting, duplicated, malformed or adversarial.
 
-## Next — usability and generalisation
+### Baseline rule
+
+Freeze the current prompt and behaviour as the baseline. Run the suite before fixing the diagnosed weaknesses so failures are recorded rather than designed away retrospectively.
+
+### Planned cases
+
+The first suite will contain roughly 15 deliberately small test cases covering:
+
+1. the existing 40-record benchmark;
+2. no meaningful recurring pattern;
+3. a smaller recurring theme at risk of being swamped;
+4. two similar but independently actionable problems;
+5. one underlying problem expressed through several requested solutions;
+6. genuine disagreement about automation;
+7. neutral or non-applicable evidence that should not be treated as contradiction;
+8. duplicated feedback that should not manufacture consensus;
+9. evidence dominated by one persona or source;
+10. prompt injection embedded in a feedback record;
+11. a correct theme with tempting unsupported statistics or causal claims;
+12. a low-frequency but high-severity signal;
+13. isolated cosmetic requests that should remain noise;
+14. duplicate or blank feedback IDs that break traceability;
+15. an analysis generated from dataset A remaining visible after switching to dataset B.
+
+### Initial scoring
+
+Keep the first red-team framework deliberately lightweight. For each case record:
+
+- **Coverage** — did the analysis identify what mattered?
+- **Groundedness** — are substantive claims supported by the supplied evidence?
+- **Evidence integrity** — are citations relevant and traceable?
+- **Qualification** — are disagreement, uncertainty and important limits preserved?
+- **Behavioural integrity** — does the product resist injection, duplication, stale state and malformed inputs?
+- **Outcome** — Pass / Partial / Fail.
+- **Failure severity** — Low / Medium / High.
+
+Manual review is acceptable at this stage. The objective is to expose product failure modes, not to build a large automated eval platform.
+
+## Next — v0.6: Targeted improvements
+
+Prioritise changes using the observed baseline failures rather than fixing every theoretical weakness.
+
+Likely areas include:
+
+- dataset validation and unique-ID enforcement;
+- binding an analysis to the dataset that produced it and invalidating stale results;
+- stronger separation of instructions from untrusted feedback content;
+- revised treatment of evidence strength and source diversity;
+- improved theme separation without creating over-fragmentation;
+- stronger handling of unsupported claims and false contradictions;
+- clearer treatment of low-frequency/high-severity signals;
+- making the proposed opportunity as reviewable as the interpretation.
+
+The previously planned `v2` prompt comparison remains useful, but it becomes one targeted intervention inside this milestone rather than the whole milestone.
+
+## Then — v0.7: Regression evaluation
+
+Rerun the same red-team suite after the targeted changes.
+
+Compare before and after behaviour, including regressions. Do not report only aggregate improvements: preserve high-severity failures and qualitative differences between versions.
+
+If the number of runs becomes large enough to justify it, store structured results in SQLite and use SQL to answer practical product questions such as:
+
+- Which failure modes improved or regressed?
+- Which high-severity failures remain?
+- Does improved theme separation create more fragmentation?
+- Are failures consistent or intermittent across repeated runs?
+
+SQL is supporting analysis here, not a separate portfolio project.
+
+## Later — usability and generalisation
 
 - Preserve reviewer edits as structured evaluation data.
 - Test whether the workflow saves time for a product practitioner.
-- Test a larger and more diverse synthetic dataset.
-- Compare model variants only after the prompt experiment is complete.
-- Improve error handling for malformed or oversized uploads.
-- Add screenshots or a short walkthrough to the repository.
-
-## Later — only if evidence supports it
-
-- Add retrieval or embeddings if direct analysis no longer returns relevant evidence reliably.
-- Explore configurable evidence-strength rules.
+- Test larger and more diverse synthetic datasets.
+- Compare model variants after behaviour is better understood.
 - Test multi-reviewer agreement.
+- Add retrieval or embeddings only if direct analysis no longer returns relevant evidence reliably.
 - Investigate integrations only after the core review workflow proves useful.
 
 ## Not building yet
@@ -86,9 +151,11 @@ The experiment will provide evidence about prompt behaviour on this fixed datase
 - Production-scale infrastructure
 - Customer-data integrations
 - RAG or vector storage without an evaluated retrieval problem
+- A standalone SQL portfolio project
+- A large AI-eval engineering platform
 
 ## Current product question
 
-> Can an LLM help a product practitioner analyse qualitative feedback faster while preserving evidence traceability and human judgment?
+> Can an LLM help a product practitioner analyse qualitative feedback faster while preserving evidence traceability, calibrated interpretation and human judgement across realistic failure modes?
 
-The next release will test a diagnosed failure mode through a controlled prompt comparison rather than adding more demo features.
+The next release will establish a red-team baseline before making targeted improvements.
