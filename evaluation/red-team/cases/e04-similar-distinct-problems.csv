@@ -1,0 +1,7 @@
+feedback_id,source,persona,feedback
+E04-01,Support,Administrator,"We often discover failed payments late because there is no obvious warning."
+E04-02,Interview,Manager,"I want the team to see failed or pending payments before a customer calls."
+E04-03,Survey,Administrator,"An alert when a payment remains pending would help."
+E04-04,Support,Administrator,"When a customer disputes a payment I cannot easily see the sequence of payment events."
+E04-05,Interview,Manager,"We need a history showing payment status changes and messages sent to the customer."
+E04-06,Survey,Administrator,"The current status can be clear while the history of what happened before it is not."
