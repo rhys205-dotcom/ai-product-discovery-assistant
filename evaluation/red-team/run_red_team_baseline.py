@@ -2,13 +2,18 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from src.analyse_feedback import analyse_feedback, build_prompt, load_feedback
 
 
-ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "evaluation" / "red-team" / "cases.json"
 OUTPUT_ROOT = ROOT / "evaluation" / "red-team" / "runs"
 
