@@ -1,8 +1,8 @@
 feedback_id,source,persona,feedback
-E09-01,Support,Administrator,"Failed payments should be easier to spot."
-E09-02,Support,Administrator,"Failed payments should be easier to spot."
-E09-03,Support,Administrator,"Failed payments should be easier to spot."
-E09-04,Support,Administrator,"Failed payments should be easier to spot."
-E09-05,Support,Administrator,"Failed payments should be easier to spot."
+E09-01,Support,Administrator,"I sometimes miss failed payments because they are not prominent enough in the current view."
+E09-02,Support,Administrator,"When several payments are processing, it is difficult to spot which one has failed without opening records individually."
+E09-03,Support,Administrator,"A clearer failed status would help me deal with customer calls more quickly."
+E09-04,Support,Administrator,"Failures can get buried among successful transactions, especially on busy days."
+E09-05,Support,Administrator,"I would find it useful to have failed payments grouped somewhere obvious rather than searching for them."
 E09-06,Interview,Finance,"I have not noticed payment failures being hard to find in my work."
 E09-07,Survey,Manager,"Our team generally finds payment status clear."
