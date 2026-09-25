@@ -104,13 +104,20 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 
 Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently found the two dominant themes but missed the smaller communication and audit-history theme in every run, producing mean theme coverage of 66.7%.
 
-This identifies **theme coverage** as the next problem to test. It does not support adding RAG: the relevant records were generally retrieved, but overlapping problems were grouped too broadly.
+This identifies **theme coverage** as a real measured weakness. It does not support adding RAG: the relevant records were generally retrieved, but overlapping problems were grouped too broadly.
 
 See the [full results and limitations](evaluation/results.md).
 
+### Red-team finding
+
+A broader review of the current product identified additional failure modes that the first benchmark does not adequately test, including prompt injection inside feedback, duplicate evidence, stale analysis after a dataset change, unsupported embellishment, false contradictions, traceability failures from duplicate IDs, frequency bias and the risk of fixing over-merging by creating over-fragmented themes.
+
+The project will therefore establish a compact adversarial baseline before changing the prompt or architecture.
+
 ### Not yet validated
 
-- Whether a revised prompt improves smaller-theme separation
+- Behaviour across the new red-team cases
+- Whether targeted changes improve high-severity failures without causing regressions
 - Whether performance generalises to other datasets or models
 - Time saved for product practitioners
 - Performance on larger or commercially realistic datasets
@@ -122,6 +129,8 @@ Those gaps are the current focus of the [backlog](backlog.md); they are not pres
 The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, generated model outputs with explicit human annotations and per-run scores.
 
 The first controlled benchmark keeps the dataset, prompt and model fixed across three runs. It reports every run rather than selecting the strongest output and records both quantitative scores and qualitative failure modes. The API key is never written to the repository.
+
+The next evaluation phase expands beyond one benchmark dataset into deliberately adversarial cases. The first pass will use lightweight human scoring for coverage, groundedness, evidence integrity, qualification, behavioural integrity and failure severity. A larger automated eval platform is deliberately out of scope.
 
 ## Repository structure
 
@@ -137,7 +146,9 @@ The first controlled benchmark keeps the dataset, prompt and model fixed across 
 
 **v0.4 — First controlled benchmark completed**
 
-The next milestone is a separately versioned prompt experiment targeting the consistently missed communication and audit-history theme while retaining `v1` as the baseline.
+**v0.5 — Red-team evaluation suite in progress**
+
+The current prompt and behaviour remain the baseline. The next milestone is to run roughly 15 targeted adversarial cases before implementing fixes. Targeted prompt work, including improved theme separation, moves into the following improvement milestone rather than being optimised against the known dataset first.
 
 ## About
 
