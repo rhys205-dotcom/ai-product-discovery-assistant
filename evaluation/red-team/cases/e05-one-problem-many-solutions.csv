@@ -1,0 +1,7 @@
+feedback_id,source,persona,feedback
+E05-01,Survey,Administrator,"Please email me when a payment fails."
+E05-02,Support,Manager,"A red banner for failed payments would make them easier to spot."
+E05-03,Interview,Administrator,"I would like a dashboard widget showing anything that needs payment attention."
+E05-04,Survey,Manager,"Could we have a daily summary of failed and pending payments?"
+E05-05,Support,Administrator,"A push notification when something fails would be useful."
+E05-06,Interview,Manager,"The real issue is that the team does not notice payment exceptions quickly enough."
