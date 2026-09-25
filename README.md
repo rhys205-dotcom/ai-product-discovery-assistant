@@ -9,9 +9,9 @@ A working product experiment for turning qualitative customer feedback into evid
 
 ## The product problem
 
-Product teams can collect more interviews, support tickets and survey comments than they can analyse consistently. Summaries alone are not enough: a reviewer needs to see which customer evidence supports a finding, where the model has inferred meaning and what still requires product judgment.
+Product teams can collect more interviews, support tickets and survey comments than they can analyse consistently. Summaries alone are not enough: a reviewer needs to see which customer evidence supports a finding, where the model has inferred meaning and what still requires product judgement.
 
-This project tests whether an LLM can accelerate that analysis without hiding the evidence or making autonomous roadmap decisions.
+This project tests whether an LLM can help a product practitioner reach a useful, defensible analysis faster without hiding the evidence or making autonomous roadmap decisions.
 
 ## Current prototype
 
@@ -30,9 +30,9 @@ The application does **not** automatically prioritise features, make roadmap dec
 
 ### Public review workflow
 
-The [public demo](https://dowsall.com/discovery-assistant) uses 40 synthetic feedback records and a pre-generated sample analysis. It does not call a live model, upload visitor data or send information to a server.
+The [public demo](https://dowsall.com/discovery-assistant) uses 40 synthetic feedback records and a pre-generated illustrative analysis. It does not call a live model, upload visitor data or send information to a server.
 
-Its purpose is to demonstrate the higher-value product interaction: inspecting evidence, challenging an interpretation and recording a human decision.
+Its purpose is to demonstrate the review/governance interaction: inspecting evidence, challenging an interpretation and recording a human decision. The illustrative sample is not presented as one of the stored benchmark runs.
 
 ### Local LLM prototype
 
@@ -66,9 +66,10 @@ The CSV must contain:
 - **AI assists; people decide.** Findings are proposals for review.
 - **Evidence before conclusions.** Every finding should cite source feedback IDs.
 - **Separate evidence from inference.** Customer statements, model interpretation and proposed opportunities are different things.
-- **No false precision.** Evidence strength is based on observable support, not a model-generated probability.
+- **No false precision.** Evidence strength should be grounded in observable support, not a model-generated probability.
 - **Synthetic public data.** The demonstration exposes no former-employer or customer information.
 - **Evaluate repeated performance.** A polished example is not evidence that the product is reliable.
+- **Validate the product, not only the model.** The workflow should help practitioners produce useful, defensible analysis, not merely score well on synthetic benchmarks.
 
 The reasoning behind these choices is recorded in the [AI decision log](docs/ai-decisions.md).
 
@@ -83,7 +84,7 @@ The reasoning behind these choices is recorded in the [AI decision log](docs/ai-
 - Human accept/edit/reject workflow
 - Reviewed JSON export
 
-RAG, embeddings and vector storage are deliberately excluded from the MVP. They will be considered only if evaluation shows that dataset size or evidence retrieval makes them necessary.
+RAG, embeddings and vector storage are deliberately excluded from the MVP. Retrieval infrastructure is not presently justified because the current datasets are supplied directly to the model; that is not a claim that retrieval has been proven reliable.
 
 ## What is validated—and what is not
 
@@ -98,39 +99,40 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. They 
 - Human-created reference analysis for the 40-record dataset
 - Transparent scoring for theme coverage, citation validity, evidence relevance and contradiction coverage
 - Secure Gemini benchmark runner limited to three controlled calls
-- Three independently generated, human-mapped and scored benchmark runs
+- Three independently generated, human-mapped and scored historical benchmark runs
 
-### Benchmark finding
+### Historical benchmark finding
 
-Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently found the two dominant themes but missed the smaller communication and audit-history theme in every run, producing mean theme coverage of 66.7%.
+Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently found the two dominant reference themes but omitted the smaller communication and audit-history reference theme in every run, producing mean theme coverage of 66.7%.
 
-This identifies **theme coverage** as a real measured weakness. It does not support adding RAG: the relevant records were generally retrieved, but overlapping problems were grouped too broadly.
+Those numbers reproduce for the stored runs, but they establish only what the scorer measures. The human reference is a documented judgement rather than objective ground truth, and the original scorer has blind spots around unmatched findings and some citation relationships. The benchmark therefore remains useful historical evidence, not a universal measure of analysis quality.
 
 See the [full results and limitations](evaluation/results.md).
 
-### Red-team finding
+### Broader review finding
 
-A broader review of the current product identified additional failure modes that the first benchmark does not adequately test, including prompt injection inside feedback, duplicate evidence, stale analysis after a dataset change, unsupported embellishment, false contradictions, traceability failures from duplicate IDs, frequency bias and the risk of fixing over-merging by creating over-fragmented themes.
+A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, unmatched hallucinated findings escaping headline metrics, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
 
-The project will therefore establish a compact adversarial baseline before changing the prompt or architecture.
+It also highlighted a larger gap: the practical product hypothesis — whether practitioners reach a useful, defensible analysis faster — has not yet been tested.
 
 ### Not yet validated
 
-- Behaviour across the new red-team cases
+- Whether the human reference theme boundaries are shared by another independent practitioner
+- Behaviour across the compact red-team cases using the current application configuration
 - Whether targeted changes improve high-severity failures without causing regressions
-- Whether performance generalises to other datasets or models
-- Time saved for product practitioners
+- Whether practitioners gain a useful time or quality advantage
+- Whether behaviour generalises to a fresh holdout dataset
 - Performance on larger or commercially realistic datasets
 
-Those gaps are the current focus of the [backlog](backlog.md); they are not presented as completed outcomes.
+Those gaps drive the [revised roadmap](backlog.md); they are not presented as completed outcomes.
 
 ## Evaluation
 
 The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, generated model outputs with explicit human annotations and per-run scores.
 
-The first controlled benchmark keeps the dataset, prompt and model fixed across three runs. It reports every run rather than selecting the strongest output and records both quantitative scores and qualitative failure modes. The API key is never written to the repository.
+Future before/after product experiments will use one application configuration and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence rather than being treated as directly comparable with the OpenAI-backed application.
 
-The next evaluation phase expands beyond one benchmark dataset into deliberately adversarial cases. The first pass will use lightweight human scoring for coverage, groundedness, evidence integrity, qualification, behavioural integrity and failure severity. A larger automated eval platform is deliberately out of scope.
+The next evaluation phase is deliberately proportionate: repair the evaluation foundation, capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. A larger automated eval platform is out of scope.
 
 ## Repository structure
 
@@ -138,18 +140,20 @@ The next evaluation phase expands beyond one benchmark dataset into deliberately
 - `src/analyse_feedback.py` — prompt construction and LLM analysis
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — reference, runner, annotated benchmark outputs and scores
+- `evaluation/` — reference, benchmark, red-team cases and scoring artefacts
 - `examples/` — example outputs
-- `backlog.md` — current experiments and deferred scope
+- `backlog.md` — current experiments and revised roadmap
 
 ## Status
 
 **v0.4 — First controlled benchmark completed**
 
-**v0.5 — Red-team evaluation suite in progress**
+**Current focus — repair evaluation and trust foundations**
 
-The current prompt and behaviour remain the baseline. The next milestone is to run roughly 15 targeted adversarial cases before implementing fixes. Targeted prompt work, including improved theme separation, moves into the following improvement milestone rather than being optimised against the known dataset first.
+The next work is to challenge the reference with an independent practitioner, correct scorer blind spots, capture and repair evidence-identity/state failures, and then run the compact behavioural baseline. Prompt `v2` remains a potential intervention during the bounded improvement cycle rather than the immediate goal.
+
+Practitioner validation has been moved forward: the project should test whether the workflow improves the user's task before investing in substantially more evaluation machinery.
 
 ## About
 
-This is a personal product-management experiment, not production software. Its purpose is to demonstrate product framing, evidence traceability, human oversight and honest evaluation of an AI-assisted workflow.
+This is a personal product-management experiment, not production software. Its purpose is to demonstrate product framing, evidence traceability, human oversight, evaluation discipline and evidence-led iteration of an AI-assisted workflow.
