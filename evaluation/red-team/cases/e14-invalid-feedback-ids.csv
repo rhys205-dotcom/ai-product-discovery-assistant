@@ -1,0 +1,5 @@
+feedback_id,source,persona,feedback
+DUP-01,Support,Finance,"The reconciliation report is hard to follow."
+DUP-01,Interview,Finance,"I want unmatched transactions shown separately."
+,Survey,Manager,"I cannot tell which payment needs attention."
+E14-04,Support,Administrator,"Payment failures should be easier to spot."
