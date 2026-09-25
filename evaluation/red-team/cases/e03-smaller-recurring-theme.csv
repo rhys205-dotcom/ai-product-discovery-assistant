@@ -1,0 +1,9 @@
+feedback_id,source,persona,feedback
+E03-01,Support,Finance,"Month end takes too long because I have to compare the payment report with our bank records."
+E03-02,Interview,Finance,"Most of my time goes into checking which transactions do not match."
+E03-03,Survey,Finance,"I would rather review exceptions than every successful payment."
+E03-04,Support,Finance,"Refunds make reconciliation much harder to follow."
+E03-05,Interview,Manager,"Reconciliation is still one of the slowest parts of month end."
+E03-06,Support,Administrator,"I sent a payment reminder twice because I could not see that one had already gone."
+E03-07,Interview,Manager,"When customers query a payment I need a clearer history of what was sent and when."
+E03-08,Survey,Administrator,"A simple communication history would stop us repeating payment messages."
