@@ -282,9 +282,7 @@ All three runs identified the two dominant themes but missed the smaller payment
 
 ### Decision
 
-The next experiment will test a separately versioned prompt that asks the model to distinguish related but independently actionable customer problems.
-
-The dataset, model and three-run protocol will remain fixed so the prompt comparison is interpretable. Prompt `v1` and its results will remain unchanged as the baseline.
+Theme separation remains a valid improvement target, but it will not be optimised in isolation against the known 40-record dataset. The current prompt and benchmark are preserved as the baseline while broader failure modes are evaluated first.
 
 RAG, embeddings and vector storage remain deferred.
 
@@ -292,7 +290,54 @@ RAG, embeddings and vector storage remain deferred.
 
 The measured limitation is theme separation rather than missing source retrieval. Adding retrieval architecture would increase complexity without addressing the failure observed in the benchmark.
 
-The prompt experiment should improve theme coverage without materially reducing citation validity or evidence precision. If later evaluation shows that relevant evidence is not being retrieved—particularly on larger datasets—retrieval architecture can be reconsidered.
+Optimising directly against the known missed theme also creates a risk of overfitting the prompt to one synthetic dataset. A broader red-team baseline provides a better basis for judging whether a prompt change genuinely improves the product or merely improves one benchmark score.
+
+---
+
+## Decision 12 — Red-team before targeted optimisation
+
+### Evidence
+
+A broader review of the current product found failure modes not adequately covered by the first benchmark, including:
+
+- prompt injection embedded in feedback content;
+- duplicate or blank IDs breaking evidence traceability;
+- stale findings remaining visible after the source dataset changes;
+- duplicated feedback creating false evidence volume;
+- evidence-strength labels overstating narrow evidence;
+- unsupported statistics or causal claims inside otherwise valid findings;
+- neutral evidence being treated as contradiction;
+- low-frequency/high-severity signals being hidden by recurring-theme logic;
+- related customer problems being over-merged;
+- one underlying problem being over-fragmented after attempts to improve separation.
+
+### Decision
+
+Version `v0.5` will create a compact adversarial evaluation suite of roughly 15 cases and run the current behaviour before fixes are introduced.
+
+The first scoring approach will remain deliberately lightweight and human-readable: coverage, groundedness, evidence integrity, qualification, behavioural integrity, Pass/Partial/Fail and failure severity.
+
+Targeted changes—including prompt `v2`—move to `v0.6`. The same suite will then be rerun in `v0.7` to check improvement and regression.
+
+### Why
+
+The project is intended to demonstrate product judgement, not eval-platform engineering. A small set of well-designed failure cases is more useful at this stage than a large automated test framework.
+
+Recording baseline failures before fixing them prevents retrospective test design and creates a clearer before/after product story.
+
+---
+
+## Decision 13 — SQL is supporting analysis, not a separate project
+
+### Decision
+
+Do not create a standalone SQL portfolio exercise for this project.
+
+If the red-team and regression work generates enough structured run data to justify it, SQLite and SQL may be introduced to analyse test results across versions, models, failure categories and severity.
+
+### Why
+
+SQL adds value when it answers a real product question. Using it to analyse accumulated eval runs demonstrates practical data fluency without creating a disconnected technical exercise.
 
 ---
 
@@ -338,6 +383,9 @@ The project will explore several questions during development:
 - At what dataset size does retrieval become valuable?
 - How should different model or prompt versions be compared?
 - What level of AI transparency is genuinely useful to a Product Manager?
+- How should low-frequency but high-severity evidence be surfaced without misrepresenting it as a recurring theme?
+- How should the product defend against instructions embedded in untrusted feedback?
+- How should duplicate and stale evidence states be detected and prevented?
 
 These questions will be revisited as the prototype develops.
 
@@ -356,6 +404,9 @@ These questions will be revisited as the prototype develops.
 | RAG | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
 | Embeddings | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
 | Evaluation framework | Human reference, transparent scorer and repeated runs | First controlled three-run benchmark completed in v0.4 |
-| Prompt iteration | Compare a versioned prompt against the fixed v1 baseline | Next experiment |
+| Red-team evaluation | Establish adversarial baseline before fixes | Current v0.5 milestone |
+| Prompt iteration | Treat v2 as one targeted intervention after red-team baseline | Planned for v0.6 |
+| Regression evaluation | Rerun the same adversarial suite after changes | Planned for v0.7 |
+| SQL | Use only if structured eval data makes it useful | Deferred / supporting analysis only |
 
 This document will evolve as the product is tested and new evidence becomes available.
