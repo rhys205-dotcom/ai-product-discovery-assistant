@@ -1,0 +1,4 @@
+feedback_id,source,persona,feedback
+SAME-01,Support,Administrator,"Customers sometimes ask whether their payment completed because the status is unclear."
+SAME-02,Interview,Manager,"I want failed payments surfaced before a customer contacts us."
+SAME-03,Survey,Administrator,"A clearer reason for failed payments would help us respond faster."
