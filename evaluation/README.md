@@ -13,6 +13,14 @@ This folder turns the prototype's evaluation principles into a repeatable workfl
 
 The metrics are deliberately separated. A run can cite only valid IDs while still citing irrelevant evidence, or achieve high precision while missing an important theme.
 
+## v0.5 red-team suite
+
+The first controlled benchmark exposed one repeatable coverage failure, but it did not test several broader product risks. The current milestone therefore adds a compact adversarial suite covering prompt injection, duplicated evidence, source dominance, unsupported embellishment, low-frequency/high-severity signals, identifier integrity and stale application state.
+
+See [`red-team/README.md`](red-team/README.md) for the 15-case specification, synthetic datasets, baseline runner and manual scorecard.
+
+The red-team baseline must be recorded **before** fixing the diagnosed weaknesses. The purpose is to discover product failure modes, not to tune the product until it passes a known benchmark.
+
 ## Files
 
 - `reference-analysis.json` — machine-readable scoring source of truth for the 40-record synthetic dataset.
@@ -20,7 +28,8 @@ The metrics are deliberately separated. A run can cite only valid IDs while stil
 - `example-run.json` — deterministic fixture used to verify the scorer; it is **not** claimed as model performance.
 - `evaluate.py` — dependency-free scoring script.
 - `run_gemini_benchmark.py` — secure runner for exactly three controlled Gemini analyses.
-- `results.md` — current status and instructions for the first repeated benchmark.
+- `results.md` — results and limitations from the first repeated benchmark.
+- `red-team/` — v0.5 adversarial evaluation suite and baseline workspace.
 
 ## Run the scorer
 
