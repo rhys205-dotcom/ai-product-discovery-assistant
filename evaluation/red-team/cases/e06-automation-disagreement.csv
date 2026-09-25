@@ -1,7 +1,7 @@
 feedback_id,source,persona,feedback
-E06-01,Survey,Finance,"Full automatic reconciliation would save me a lot of time."
-E06-02,Interview,Finance,"I would be comfortable with automatic matching for straightforward transactions."
-E06-03,Support,Finance,"Please do not auto-adjust anything without approval."
-E06-04,Interview,Manager,"I want exceptions highlighted, but a person should approve financial adjustments."
-E06-05,Survey,Finance,"Automation is useful as long as I can review what changed."
-E06-06,Support,Manager,"For higher-value discrepancies I would always want human sign-off."
+E06-01,Survey,Finance,"For routine matched payments I want the system to post the reconciliation automatically without asking me to approve each one."
+E06-02,Interview,Manager,"If the amounts and references match exactly, automatic posting is what I want. Manual approval just slows us down."
+E06-03,Support,Finance,"Even when a payment looks like an exact match, I do not want it posted to the ledger until someone approves it."
+E06-04,Interview,Finance,"I would rather approve every proposed match than have the system post one incorrectly."
+E06-05,Survey,Manager,"Our team is comfortable with automatic posting for exact matches, but exceptions should stay manual."
+E06-06,Support,Finance,"Please keep approval required for all matches, including straightforward ones."
