@@ -21,18 +21,7 @@ It will not autonomously decide:
 
 ### Why
 
-Product decisions require context that may not exist within a customer-feedback dataset.
-
-This can include:
-
-- business strategy
-- commercial value
-- technical feasibility
-- regulatory constraints
-- operational impact
-- dependencies
-- cost
-- wider customer evidence
+Product decisions require context that may not exist within a customer-feedback dataset, including strategy, commercial value, technical feasibility, regulation, operations, dependencies, cost and wider evidence.
 
 The AI therefore acts as an analytical assistant rather than a decision-maker.
 
@@ -42,7 +31,7 @@ The AI therefore acts as an analytical assistant rather than a decision-maker.
 
 ### Decision
 
-AI output will distinguish between three levels:
+AI output will distinguish between:
 
 1. **Evidence** — what customers actually said
 2. **Interpretation** — what the AI believes the evidence indicates
@@ -50,11 +39,7 @@ AI output will distinguish between three levels:
 
 ### Why
 
-Large Language Models can produce convincing conclusions even when those conclusions are weakly supported.
-
-Presenting all AI output in the same way could cause users to mistake an AI inference for customer evidence.
-
-The interface and structured output should therefore preserve this distinction.
+Large Language Models can produce convincing conclusions even when those conclusions are weakly supported. The interface and structured output should preserve this distinction.
 
 ---
 
@@ -62,26 +47,11 @@ The interface and structured output should therefore preserve this distinction.
 
 ### Decision
 
-Generated themes and pain points should reference the feedback records that support them.
-
-For example:
-
-> Theme: Manual reconciliation creates significant effort  
-> Evidence: F002, F007, F014, F021
-
-Users should be able to inspect those records before accepting the finding.
+Generated themes and pain points should reference the feedback records that support them, and users should be able to inspect those records before accepting a finding.
 
 ### Why
 
-Traceability:
-
-- increases user trust
-- makes findings easier to challenge
-- helps identify hallucination
-- allows users to understand why a conclusion was generated
-- supports human review
-
-A plausible answer is not sufficient. The system should be able to show the evidence behind it.
+Traceability increases challengeability, exposes hallucination and supports human review. A plausible answer is not sufficient.
 
 ---
 
@@ -89,51 +59,29 @@ A plausible answer is not sufficient. The system should be able to show the evid
 
 ### Decision
 
-The application will not simply ask the LLM to assign its own confidence score to a finding.
+The application will not present model-generated confidence percentages as evidence.
 
-Evidence strength should instead be based on observable factors such as:
-
-- number of supporting feedback records
-- diversity of sources
-- consistency of the underlying feedback
-- relevance of the supporting evidence
+Evidence strength should instead be grounded in observable support such as cited record count, source/persona breadth, consistency, relevance, suspected duplication and important qualifications.
 
 ### Why
 
-An LLM stating that it is "95% confident" does not necessarily mean that a finding has a 95% probability of being correct.
+A model stating that it is highly confident does not calibrate the probability that a finding is correct. Even labels such as Strong/Moderate/Limited can become falsely authoritative if their basis is hidden.
 
-Displaying such scores could create false precision.
-
-The product should prefer explainable evidence indicators over apparently precise but poorly calibrated confidence scores.
+If a strength label is retained, its observable basis should be visible and challengeable.
 
 ---
 
-## Decision 5 — Start without RAG
+## Decision 5 — Keep retrieval infrastructure deferred
 
 ### Decision
 
-The first version will analyse a deliberately small dataset without implementing a Retrieval-Augmented Generation architecture.
+Do not add RAG, embeddings or vector storage to the current MVP unless a measured problem shows that retrieval would help.
 
 ### Why
 
-The initial goal is to test the product hypothesis:
+The current evaluation datasets are supplied directly to the model. The project therefore has not established a retrieval-stage success or failure. The defensible conclusion is simply that retrieval infrastructure is **not presently justified**.
 
-> Can AI generate useful, evidence-backed product insights from qualitative feedback?
-
-Adding embeddings, vector databases and retrieval infrastructure before establishing this would increase complexity without necessarily increasing product value.
-
-The MVP will establish a baseline first.
-
-RAG will be considered when:
-
-- datasets become too large for reliable direct analysis
-- relevant evidence becomes difficult to retrieve
-- context-window limitations become important
-- evaluation demonstrates that retrieval would improve output quality
-
-### Principle
-
-Use additional AI architecture to solve demonstrated problems, not simply because the technology is available.
+If realistic input sizes, targeted search needs or measured omissions later create a retrieval problem, compare retrieval with simpler alternatives such as batching before increasing architectural complexity.
 
 ---
 
@@ -145,17 +93,7 @@ The public demonstration will use synthetic customer feedback.
 
 ### Why
 
-Real customer feedback may contain:
-
-- names
-- contact information
-- commercially sensitive information
-- confidential product information
-- personal data
-
-Using synthetic data allows the AI workflow to be demonstrated publicly without exposing real customers or former employers.
-
-The synthetic dataset should still contain realistic patterns, contradictions, edge cases and irrelevant feedback so that the AI analysis can be meaningfully evaluated.
+Real feedback may contain personal, confidential or commercially sensitive information. Synthetic data enables public demonstration while still allowing realistic contradictions, distractors and failure cases.
 
 ---
 
@@ -163,27 +101,13 @@ The synthetic dataset should still contain realistic patterns, contradictions, e
 
 ### Decision
 
-Where possible, the model should return findings using a defined structure rather than an unrestricted narrative response.
-
-A finding might contain:
-
-- theme
-- pain point
-- evidence IDs
-- evidence strength
-- problem statement
-- potential opportunity
+Where possible, the model should return findings using a defined structure rather than unrestricted narrative output.
 
 ### Why
 
-Structured output makes it easier to:
+Structured output supports validation, consistent display, comparison, evaluation and integration.
 
-- validate model responses
-- display findings consistently
-- compare different runs
-- evaluate output quality
-- detect missing information
-- integrate AI output into an application
+The application still needs to validate required fields and failure states rather than treating any object containing a `themes` list as complete.
 
 ---
 
@@ -191,54 +115,27 @@ Structured output makes it easier to:
 
 ### Decision
 
-The project will include an evaluation process for AI-generated findings.
+The project will evaluate AI-generated findings rather than treating a polished demonstration as evidence of reliability.
 
-The initial evaluation dimensions will be:
-
-### Faithfulness
-
-Is the finding actually supported by the referenced evidence?
-
-### Coverage
-
-Did the system identify the important patterns present in the dataset?
-
-### Hallucination
-
-Did the model introduce claims that are not supported by the source feedback?
-
-### Usefulness
-
-Would the output help a product professional understand or investigate the customer problem?
+Initial dimensions include coverage, groundedness, evidence integrity, qualification and behavioural integrity.
 
 ### Why
 
-Generative AI can produce impressive individual examples while performing inconsistently across repeated tasks.
-
-A successful demonstration is therefore not sufficient evidence of a reliable AI product.
+Generative AI can produce impressive individual examples while behaving inconsistently across repeated tasks.
 
 ---
 
-## Decision 9 — Maintain human review
+## Decision 9 — Maintain human review, including omissions
 
 ### Decision
 
 Generated findings will be presented for review rather than automatically accepted.
 
-The current review prototype allows users to:
-
-- accept, edit or reject a finding
-- inspect the cited source evidence
-- record a review note
-- export the reviewed result
-
-The interface also warns when a cited feedback ID is missing from the supplied dataset. Relevance and faithfulness still require human assessment.
+Human oversight should eventually cover not only shown findings but also omissions and recommendations. A reviewer should be able to challenge the opportunity, record a missing observation and distinguish original output from edits.
 
 ### Why
 
-Human review provides both a product safeguard and a potential source of evaluation data.
-
-Patterns in accepted, edited and rejected findings could eventually help measure the usefulness of the system.
+Human review is strongest only when the reviewer can correct what the model said **and** what it failed to say. This is especially important because omission is already a measured failure mode.
 
 ---
 
@@ -246,106 +143,178 @@ Patterns in accepted, edited and rejected findings could eventually help measure
 
 ### Decision
 
-Prompts used by the application will be treated as versioned product components rather than hidden implementation details.
-
-Changes to important prompts should be documented and tested.
+Prompts will be treated as versioned product components. Material prompt changes should be documented and evaluated.
 
 ### Why
 
-Prompt changes can materially alter:
-
-- output quality
-- hallucination rates
-- tone
-- structure
-- evidence selection
-- consistency
-
-Prompt changes should therefore be evaluated in much the same way as other changes to product behaviour.
+Prompt changes can alter output quality, evidence selection, structure, hallucination and consistency.
 
 ---
 
-## Decision 11 — Improve theme separation before adding retrieval architecture
+## Decision 11 — Do not optimise the prompt to reproduce one known reference
 
 ### Evidence
 
-The first controlled benchmark held the 40-record dataset, `gemini-3.5-flash` model and prompt version `v1` constant across three runs.
+The first controlled Gemini benchmark measured 100% citation validity, 95.5% mean evidence precision, 88.5% mean reference evidence coverage and 66.7% mean theme coverage. All three runs omitted the smaller payment communication and audit-history reference theme.
 
-The benchmark measured:
-
-- 100% citation validity
-- 95.5% mean evidence precision
-- 88.5% mean reference evidence coverage
-- 66.7% mean theme coverage
-
-All three runs identified the two dominant themes but missed the smaller payment communication and audit-history theme. Relevant records were generally retrieved but were grouped into a broader payment-status theme.
+A later review highlighted that the reference itself is a documented human judgement. Some records assigned to the third theme also plausibly support the broader payment-status problem.
 
 ### Decision
 
-Theme separation remains a valid improvement target, but it will not be optimised in isolation against the known 40-record dataset. The current prompt and benchmark are preserved as the baseline while broader failure modes are evaluated first.
+Theme separation remains worth testing, but recovering one predetermined top-level theme is not itself the product goal.
 
-RAG, embeddings and vector storage remain deferred.
+Before using prompt `v2` as evidence of improvement:
+
+- challenge the reference with at least one independent practitioner;
+- allow useful subthemes as well as top-level themes;
+- test separation and fragmentation together;
+- avoid explicitly telling the model which known payment theme to find.
 
 ### Why
 
-The measured limitation is theme separation rather than missing source retrieval. Adding retrieval architecture would increase complexity without addressing the failure observed in the benchmark.
-
-Optimising directly against the known missed theme also creates a risk of overfitting the prompt to one synthetic dataset. A broader red-team baseline provides a better basis for judging whether a prompt change genuinely improves the product or merely improves one benchmark score.
+Optimising directly against a known synthetic reference risks overfitting and can reward more themes rather than better analysis.
 
 ---
 
-## Decision 12 — Red-team before targeted optimisation
+## Decision 12 — Repair evaluation blind spots before expanding quantitative claims
 
 ### Evidence
 
-A broader review of the current product found failure modes not adequately covered by the first benchmark, including:
+Review of the current scorer found that unmatched generated findings can escape headline scoring, citations attached to unknown themes can escape main citation checks, duplicate mappings can overwrite one another and aggregated unique citation counts can hide incorrect use of an ID in one finding when it is correct elsewhere.
 
-- prompt injection embedded in feedback content;
-- duplicate or blank IDs breaking evidence traceability;
-- stale findings remaining visible after the source dataset changes;
-- duplicated feedback creating false evidence volume;
-- evidence-strength labels overstating narrow evidence;
-- unsupported statistics or causal claims inside otherwise valid findings;
-- neutral evidence being treated as contradiction;
-- low-frequency/high-severity signals being hidden by recurring-theme logic;
-- related customer problems being over-merged;
-- one underlying problem being over-fragmented after attempts to improve separation.
+The existing published benchmark numbers still reproduce for the saved runs; these limitations narrow what the numbers establish rather than invalidating the historical experiment.
 
 ### Decision
 
-Version `v0.5` will create a compact adversarial evaluation suite of roughly 15 cases and run the current behaviour before fixes are introduced.
+Before making stronger quantitative claims:
 
-The first scoring approach will remain deliberately lightweight and human-readable: coverage, groundedness, evidence integrity, qualification, behavioural integrity, Pass/Partial/Fail and failure severity.
-
-Targeted changes—including prompt `v2`—move to `v0.6`. The same suite will then be rerun in `v0.7` to check improvement and regression.
+- inspect citations across all generated findings;
+- evaluate relevance per finding–citation relationship;
+- explicitly surface unmatched findings for human review;
+- prevent duplicate mappings from silently overwriting one another;
+- keep the human reference contestable rather than treating unmatched findings as automatically wrong.
 
 ### Why
 
-The project is intended to demonstrate product judgement, not eval-platform engineering. A small set of well-designed failure cases is more useful at this stage than a large automated test framework.
-
-Recording baseline failures before fixing them prevents retrospective test design and creates a clearer before/after product story.
+A metric should not become a product target until its blind spots are understood.
 
 ---
 
-## Decision 13 — SQL is supporting analysis, not a separate project
+## Decision 13 — Capture and fix evidence-integrity failures early
+
+### Evidence
+
+The current upload parser can accept blank or duplicate IDs, and the evidence lookup uses feedback ID as a dictionary key. The current application also retains analysis in session state when the uploaded dataset changes, creating a risk that old findings can be displayed against new records with reused IDs. Review controls use positional keys, which can also allow stale reviewer state to persist.
 
 ### Decision
 
-Do not create a standalone SQL portfolio exercise for this project.
+Record these failures as baseline evidence, then repair them promptly rather than waiting for every model red-team case to finish.
 
-If the red-team and regression work generates enough structured run data to justify it, SQLite and SQL may be introduced to analyse test results across versions, models, failure categories and severity.
+Required trust controls include:
+
+- unique, non-blank feedback IDs;
+- dataset identity bound to analysis and review state;
+- stale result invalidation;
+- response validation;
+- original-versus-edited output preservation;
+- dataset/run provenance in exports;
+- explicit handling of failed calls and invalid outputs.
 
 ### Why
 
-SQL adds value when it answers a real product question. Using it to analyse accumulated eval runs demonstrates practical data fluency without creating a disconnected technical exercise.
+These are product-integrity failures, not optional model-quality refinements. They undermine the promise that findings remain traceable to the evidence a reviewer actually inspected.
+
+---
+
+## Decision 14 — Keep the red-team suite compact and diagnostic
+
+### Decision
+
+Retain the approximately 15-case red-team suite because it is already built and covers useful failure classes, but treat it as a compact development tool rather than a research programme.
+
+Refine cases where needed:
+
+- E06 should test genuinely opposing preferences about the same automated action.
+- E09 should test narrow representation without using exact duplicates as the confounder.
+- E12 should expect an **isolated signal requiring investigation**, not a recurring theme.
+- Important cases should be repeated even when the first run passes.
+- Broken model responses and export integrity should also be checked.
+
+### Why
+
+The aim is to expose consequential product behaviour and prioritise improvements, not to maximise the number of eval artefacts.
+
+---
+
+## Decision 15 — Move practitioner validation forward
+
+### Decision
+
+Do not defer usability/value validation until after multiple additional evaluation releases.
+
+Run approximately three short sessions with PMs, POs or BAs during the next bounded improvement cycle.
+
+Measure directionally:
+
+- time to a reviewed, usable output;
+- unsupported claims retained;
+- important problems missed;
+- whether the participant can explain and defend the conclusion;
+- what they correct, reject or add.
+
+### Why
+
+The core product hypothesis includes usefulness and speed. Model behaviour can be well measured while the workflow still provides little practical advantage.
+
+If practitioners do not gain useful time or quality, the product should be narrowed or further feature work stopped rather than justified through more eval sophistication.
+
+---
+
+## Decision 16 — Use one application configuration for future comparisons
+
+### Decision
+
+Future before/after experiments should use the current application configuration and hold the relevant model/request settings constant.
+
+The earlier Gemini benchmark remains a separately labelled historical experiment and should not be treated as a clean baseline for changes to the OpenAI-backed application.
+
+### Why
+
+The historical benchmark and application use different providers and request/validation configurations. A clean product comparison requires the configuration under test to remain stable apart from the intended change.
+
+---
+
+## Decision 17 — Preserve one fresh holdout
+
+### Decision
+
+After the bounded improvement cycle, test behaviour on a fresh dataset with different language or subject matter that has not been repeatedly tuned against.
+
+If that dataset is used to improve the product, it becomes development data and another holdout is required before making stronger generalisation claims.
+
+### Why
+
+The original benchmark and several adversarial cases share payment language and product assumptions. More synthetic cases do not automatically create independent evidence.
+
+---
+
+## Decision 18 — SQL is supporting analysis, not a separate project
+
+### Decision
+
+Do not create a standalone SQL portfolio exercise.
+
+SQLite/SQL may be introduced only when recurring analytical questions across versions, cases and runs are awkward to answer from JSON/CSV.
+
+### Why
+
+SQL adds value when it answers a real product question. Its presence alone adds little portfolio value.
 
 ---
 
 # Current Architecture Principle
 
-The initial architecture should be the simplest architecture capable of testing the product hypothesis.
-
-The expected progression is:
+Use the simplest architecture capable of testing the product hypothesis:
 
 **Structured feedback**
 
@@ -365,29 +334,21 @@ The expected progression is:
 
 **Human review**
 
-More sophisticated techniques such as embeddings, semantic search and RAG should be introduced only when evaluation demonstrates that they solve a meaningful limitation.
+Add complexity only where measured product evidence justifies it.
 
 ---
 
 # Open Questions
 
-The project will explore several questions during development:
-
-- How much customer feedback can be analysed reliably in a single context?
-- How should evidence strength be calculated?
-- How should contradictory customer feedback be represented?
-- Can the model reliably distinguish evidence from inference?
-- How frequently does the model cite irrelevant evidence?
-- Does providing evidence requirements reduce hallucination?
-- How should human corrections be captured?
-- At what dataset size does retrieval become valuable?
-- How should different model or prompt versions be compared?
-- What level of AI transparency is genuinely useful to a Product Manager?
-- How should low-frequency but high-severity evidence be surfaced without misrepresenting it as a recurring theme?
+- Can practitioners reach a useful, defensible analysis faster with this workflow?
+- Which theme distinctions materially change the next investigation or decision?
+- How should evidence strength expose breadth, duplication and qualification?
+- How should contradictory, neutral and non-applicable evidence be distinguished?
+- How should low-frequency/high-severity signals be surfaced without calling them recurring themes?
+- How should human corrections and missing observations be preserved?
 - How should the product defend against instructions embedded in untrusted feedback?
-- How should duplicate and stale evidence states be detected and prevented?
-
-These questions will be revisited as the prototype develops.
+- At what dataset size or task does retrieval add value over direct analysis or batching?
+- What transparency is genuinely useful to a Product Manager rather than merely impressive in a demo?
 
 ---
 
@@ -396,17 +357,20 @@ These questions will be revisited as the prototype develops.
 | Decision | Current Position | Status |
 |---|---|---|
 | Role of AI | Assist, not decide | Accepted |
-| Evidence traceability | Required | Accepted |
-| Human review | Required | Implemented in v0.2 |
-| Model confidence scores | Avoid | Accepted |
-| Synthetic data | Use for public prototype | Implemented |
-| Structured outputs | Preferred | Implemented |
-| RAG | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
-| Embeddings | Not justified by the v0.4 benchmark | Deferred until a retrieval limitation is measured |
-| Evaluation framework | Human reference, transparent scorer and repeated runs | First controlled three-run benchmark completed in v0.4 |
-| Red-team evaluation | Establish adversarial baseline before fixes | Current v0.5 milestone |
-| Prompt iteration | Treat v2 as one targeted intervention after red-team baseline | Planned for v0.6 |
-| Regression evaluation | Rerun the same adversarial suite after changes | Planned for v0.7 |
-| SQL | Use only if structured eval data makes it useful | Deferred / supporting analysis only |
+| Evidence traceability | Required | Accepted; trust fixes now prioritised |
+| Human review | Include shown findings, omissions and reviewer provenance | Partially implemented |
+| Evidence strength | Prefer observable basis over model authority | Improvement planned |
+| Synthetic public data | Use for public prototype | Implemented |
+| Structured outputs | Preferred and must be validated | Validation improvement planned |
+| RAG / embeddings | Not presently justified | Deferred |
+| Historical Gemini benchmark | Useful but separately labelled | Completed v0.4 |
+| Human reference | Repeatable but contestable | Independent review planned |
+| Evaluation scorer | Useful with known blind spots | Repair now |
+| Red-team suite | Compact diagnostic baseline | Built; refinement/runs pending |
+| Trust failures | Record then fix promptly | Current priority |
+| Prompt v2 | One intervention in bounded improvement cycle | Later, after baseline/reference review |
+| Practitioner validation | Test practical usefulness during improvement cycle | Moved forward |
+| Fresh holdout | Use after improvement cycle | Planned |
+| SQL | Use only when analysis requires it | Optional / deferred |
 
 This document will evolve as the product is tested and new evidence becomes available.
