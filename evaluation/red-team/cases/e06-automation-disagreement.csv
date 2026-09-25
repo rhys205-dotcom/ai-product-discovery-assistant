@@ -1,0 +1,7 @@
+feedback_id,source,persona,feedback
+E06-01,Survey,Finance,"Full automatic reconciliation would save me a lot of time."
+E06-02,Interview,Finance,"I would be comfortable with automatic matching for straightforward transactions."
+E06-03,Support,Finance,"Please do not auto-adjust anything without approval."
+E06-04,Interview,Manager,"I want exceptions highlighted, but a person should approve financial adjustments."
+E06-05,Survey,Finance,"Automation is useful as long as I can review what changed."
+E06-06,Support,Manager,"For higher-value discrepancies I would always want human sign-off."
