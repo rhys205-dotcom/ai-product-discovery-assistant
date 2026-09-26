@@ -1,237 +1,156 @@
 # Product Backlog
 
-This backlog records the next experiments for the AI Product Discovery Assistant. It separates completed capability from unvalidated assumptions so the repository reflects the real product state.
+This backlog records the evidence-led roadmap for the AI Product Discovery Assistant. Completed capability is kept separate from unvalidated assumptions so the repository does not overstate what the prototype proves.
 
-## Completed — v0.1: Product definition
+## Completed foundations
 
-- Defined the user problem, MVP boundaries and responsible-AI principles.
-- Created a 40-record synthetic feedback dataset with multiple personas and research sources.
-- Documented why AI assists rather than decides.
-- Defined evidence, interpretation and proposed opportunity as separate output layers.
-- Deferred RAG and embeddings until evaluation demonstrates a need.
+### v0.1 — Product definition
+- Defined the user problem and responsible-AI boundaries.
+- Created a 40-record synthetic feedback dataset.
+- Separated evidence, interpretation and proposed opportunity.
+- Kept RAG/embeddings out of the MVP until a measured retrieval problem exists.
 
-## Completed — v0.2: Evidence-linked review
+### v0.2 — Evidence-linked review
+- Structured themes, pain points, evidence IDs and opportunities.
+- CSV upload/sample-data workflow.
+- Source evidence shown beneath findings.
+- Human accept/edit/reject decisions and notes.
+- Reviewed JSON export.
+- Static public review workflow using synthetic data.
 
-- Generate structured themes, pain points, evidence IDs and proposed opportunities.
-- Load the sample data or accept an uploaded CSV.
-- Display cited source feedback beneath each finding.
-- Warn when the model cites an ID that is not present in the dataset.
-- Allow a reviewer to accept, edit or reject a finding.
-- Capture review notes and export the reviewed result as JSON.
-- Publish a static public review workflow using pre-generated analysis and synthetic data.
+### v0.3 — Evaluation baseline
+- Contestable human reference analysis.
+- Inspectable scorer and deterministic fixture.
+- Controlled repeated-run protocol.
 
-## Completed — v0.3: Evaluation baseline
+### v0.4 — First controlled benchmark
+- Three Gemini runs on the 40-record dataset.
+- Historical v1 result: 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage.
+- All three runs represented the two dominant reference distinctions and omitted the smaller separately labelled communication/history distinction.
+- Scorer v2 later narrowed what those numbers establish without erasing the historical experiment.
 
-- Created a human reference analysis covering themes, supporting evidence, qualifying evidence and deliberate distractors.
-- Added a dependency-free scoring script with explicit, inspectable rules.
-- Separated theme coverage, citation validity, evidence relevance, reference coverage and contradiction coverage.
-- Added a deterministic fixture to verify the scorer without presenting it as model performance.
-- Defined a controlled protocol for repeated model runs.
+## Step 1 — Repair the evaluation foundation — COMPLETE
 
-## Completed — v0.4: First controlled benchmark
+- Human reference explicitly treated as contestable, not ground truth.
+- Blind practitioner-review pack created; review remains a trailing non-blocking activity.
+- Scorer v2 repairs unmatched-finding, duplicate-mapping, relationship-level citation and qualification-precision blind spots.
+- Regression tests added.
+- Historical Gemini benchmark retained as a separately labelled experiment.
+- Current Gemini-backed application request path chosen as the configuration for future before/after comparisons.
+- Public illustrative output kept distinct from measured benchmark output.
 
-- Ran three Gemini analyses with the 40-record dataset, model and prompt version held constant.
-- Recorded the provider, model, prompt hash, prompt version and timestamps.
-- Human-mapped every generated theme to the documented reference before scoring.
-- Reported every run rather than selecting a preferred result.
-- Measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage under the original scorer.
-- Identified a repeatable result: all three runs omitted the smaller payment communication and audit-history reference distinction.
-- Kept retrieval infrastructure deferred because all 40 records are supplied directly to the model and no measured retrieval problem currently justifies RAG.
+## Step 2 — Capture and fix trust failures — COMPLETE
 
-## Completed — broader red-team review
+The pre-fix failures are preserved in `evaluation/red-team/trust-baseline.md`.
 
-A broader product review found that the first benchmark is useful but too narrow on its own. It also identified two important distinctions:
+Implemented and verified:
+- reject blank/duplicate feedback IDs;
+- normalise IDs before uniqueness checks;
+- fingerprint datasets and bind findings/reviewer state to dataset + run;
+- invalidate stale findings/reviewer controls on dataset or run change;
+- validate structured model responses;
+- clear prior output before failed attempts;
+- preserve raw/original output separately from reviewer edits;
+- export dataset/run/provider/model/prompt provenance;
+- retain failed model calls as explicit outcomes;
+- E14 malformed-ID smoke test passed;
+- E15 dataset-switch smoke test passed;
+- reviewed export provenance inspection passed;
+- post-provider-switch regression suite passed.
 
-- reproducing the three-theme human reference is not automatically the same as producing the best product analysis;
-- the practical product hypothesis — whether a practitioner can reach a useful, defensible analysis faster — remains untested.
+## Step 3 — Compact behavioural baseline — COMPLETE
 
-The review also exposed concrete trust and evaluation risks, including duplicate/blank IDs, stale analysis after a dataset change, scorer blind spots around unmatched findings, narrow evidence being presented too strongly, unsupported embellishment, prompt injection, false contradiction and over-merging/over-fragmentation.
+The fixed acceptance criteria are in `evaluation/red-team/acceptance-criteria.md`. Human-reviewed results are recorded in `evaluation/red-team/baseline-results.md`.
 
-This changed the sequence of work. The project repairs the evaluation and trust foundation first, then runs a compact behavioural baseline and practitioner validation before investing in more evaluation depth.
+Initial breadth: E01–E13 once. Selected important cases were then repeated twice.
 
-# Revised roadmap
+Key conclusions:
+- **E08 duplicate evidence — confirmed high-severity failure:** exact repeated evidence was repeatedly treated as Strong independent-looking support, with unsupported technical-cause language.
+- **E12 isolated serious signal — confirmed high-severity failure:** the cross-account access report was either omitted or overstated as a confirmed/critical vulnerability.
+- **E07 neutral evidence — stochastic medium weakness:** non-use/non-exposure was sometimes misclassified as contradiction.
+- **E13 abstention — repeatable low-severity weakness:** heterogeneous one-off UI requests were repeatedly manufactured into a Moderate recurring theme.
+- **E01 theme separation — repeatable medium weakness:** communication/history was not reliably preserved as a materially distinct problem.
+- **E06 disagreement, E09 breadth calibration and the tested E10 injection pattern were strengths.**
+- **E11 was mostly grounded, with one repeat drifting into unsupported consequences.**
 
-## Step 1 — Repair the evaluation foundation — COMPLETE FOR CORE DEVELOPMENT
+No overall percentage is used because the cases have different risk and severity.
 
-### Objective
+## Step 4 — One bounded improvement cycle + practitioner validation — IN PROGRESS
 
-Make sure the project can state precisely what existing results do and do not establish.
+### Implemented in prompt/contract v2
 
-### Completed in Step 1
+The changes are intentionally tied to measured failures:
 
-- [x] Treat the human reference as a contestable judgement, not ground truth.
-- [x] Mark the existing three-theme reference as provisional rather than silently treating it as canonical.
-- [x] Add a blind review pack for an independent PM/PO/BA who has not seen the expected theme structure.
-- [x] Replace the original scorer with **scorer v2**, which keeps unmatched findings and their citations visible.
-- [x] Score citation relevance at the finding–citation relationship level rather than only through aggregated unique IDs.
-- [x] Preserve and flag duplicate theme mappings rather than allowing one finding to overwrite another.
-- [x] Add qualification precision so irrelevant contradictory/qualifying records reduce the score instead of being ignored.
-- [x] Add regression tests for the scorer failure modes discovered during red-team review.
-- [x] Reinterpret the historical Gemini benchmark under the repaired scorer while preserving the original published v1 metrics.
-- [x] Choose the current Gemini-backed application request path/configuration as the baseline for future prompt comparisons; retain the earlier Gemini benchmark as a separately labelled historical experiment because it used a different benchmark runner/request configuration.
-- [x] Align repository wording so illustrative public-demo output is distinguished from measured benchmark output.
+1. **Isolated serious signals**
+   - Add a separate `isolated_signals` output contract.
+   - Keep one-off potentially material security/privacy/safety/compliance/data-integrity/financial-control observations out of recurring-theme logic.
+   - Require explicit uncertainty and verification/investigation language rather than a confirmed-incident claim or roadmap decision.
 
-### Trailing activity — non-blocking
+2. **Duplicate evidence**
+   - Deterministically detect exact text/source/persona repetition.
+   - Expose possible duplicate groups to the model and reviewer.
+   - Explicitly prohibit treating repeated IDs as independent customers or stronger consensus merely because there are more IDs.
 
-- [ ] Complete one independent blind practitioner review of the 40-record dataset using `evaluation/independent-reference-review.md`.
-- [ ] Record the comparison with reference v1.0 and decide whether to retain it, version it, or document multiple plausible analyses.
+3. **Contradiction and groundedness**
+   - Define contradiction as a genuinely opposing experience/preference about the same problem.
+   - Treat non-use/non-exposure as neutral/non-applicable.
+   - Prohibit unsupported technical causes, averages, business impact, causal consequences and implementation details.
 
-This review remains valuable, but it is no longer a gate for continuing the development roadmap. Until it is completed, the current human reference remains explicitly provisional and contestable.
+4. **Abstention**
+   - Explicitly allow `themes: []`.
+   - Require a coherent recurring customer problem rather than grouping unrelated requests by broad category.
 
-## Step 2 — Capture and fix trust failures — IMPLEMENTATION COMPLETE; FINAL SMOKE TEST IN PROGRESS
+5. **Reviewability**
+   - Show observable evidence basis (record/source/persona counts) alongside the model's strength label.
+   - Display contradictory/qualifying evidence as source text rather than IDs only.
+   - Make potential opportunities editable.
+   - Preserve reviewed isolated signals in exports.
 
-### Objective
+### Verification next
 
-Protect the core product promise: evidence must not become detached from the dataset or reviewer decision that produced it.
-
-### Baseline captured before repair
-
-The pre-fix deterministic failures are recorded in `evaluation/red-team/trust-baseline.md` against repository state `8b79640848fcfbf4adcbbfae555649dfb903935c`.
-
-### Implemented
-
-- [x] Reject blank and duplicate feedback IDs before analysis.
-- [x] Normalise identifiers before uniqueness checks so whitespace cannot create ambiguous duplicate IDs.
-- [x] Fingerprint the active dataset and bind analysis provenance to that identity.
-- [x] Bind reviewer widget state to a unique analysis run ID.
-- [x] Invalidate stale findings and review decisions when the dataset changes.
-- [x] Clear earlier findings and reviewer state before every new analysis attempt, including failed attempts.
-- [x] Add a second dataset-provenance check before findings can be rendered.
-- [x] Add structured-response validation for required finding fields, evidence lists and evidence-strength values.
-- [x] Preserve raw model text and the original parsed analysis separately from reviewer edits.
-- [x] Include dataset hash/source, run ID, provider, model, prompt hash and timestamps in reviewed exports.
-- [x] Record and display failed analysis attempts instead of silently retaining earlier successful output.
-- [x] Harden the red-team runner so failed calls and invalid responses are saved as explicit results and the suite manifest still completes.
-- [x] Add deterministic regression tests for feedback validation, response validation, dataset binding, review-state invalidation and export provenance.
-- [x] Use the existing `GEMINI_API_KEY`/Google Gen AI SDK for the working application baseline rather than adding an unnecessary second provider dependency.
-
-### Verification
-
-- [x] Local regression suite passed: **22 tests, OK**.
-- [x] E14 upload smoke test passed: duplicate IDs were rejected before analysis.
-- [x] Failed model-attempt handling was observed to clear/retain no previous findings when the missing-provider-key call failed.
-- [ ] Re-run the regression suite after the Gemini application switch.
-- [ ] Run the E15 dataset-switch smoke test with Gemini and confirm findings/reviewer state do not carry across datasets or analysis runs.
-- [ ] Inspect one exported review and confirm original output, reviewed output and provenance remain distinct.
-
-These are verification tasks, not further feature work.
-
-### Completion condition
-
-Findings and human decisions cannot silently acquire the wrong source evidence, and reviewed exports preserve where the analysis came from and what the reviewer changed. The repair implementation is in place; the remaining gate is the short E15/export verification after the provider alignment.
-
-## Step 3 — Run the compact behavioural baseline — NEXT AFTER SMOKE TEST
-
-### Objective
-
-Use the existing red-team suite to establish how the current application behaves across meaningful failure modes without turning the project into an eval platform.
-
-### Prepared work
-
-- [x] The approximately 15-case suite already exists.
-- [x] E06 has been sharpened to test genuinely opposing preferences about the same automated action.
-- [x] E09 has been rewritten so narrow representation is not confounded with exact duplicate wording.
-- [x] E12 is defined as an **isolated signal requiring investigation**, not a recurring theme.
-- [x] Failed model calls and invalid outputs are retained as explicit run outcomes.
-- [x] Raw model text and validated parsed output are stored separately by the red-team runner.
-- [x] Concrete pre-run acceptance criteria are documented in `evaluation/red-team/acceptance-criteria.md`, including what must be present, prohibited behaviour, acceptable variation and evidence to inspect.
-- [x] The runner is aligned to the current Gemini-backed application configuration.
-
-### Remaining work
-
-- [ ] Run the model cases on the current Gemini-backed application configuration.
-- [ ] Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
-- [ ] Repeat important model cases, including apparent passes, before drawing stronger conclusions.
-
-### Completion condition
-
-The important behavioural failures have inspectable examples, clear severity and enough repeated evidence to prioritise a bounded improvement cycle.
-
-## Step 4 — One bounded improvement cycle + practitioner validation
-
-### Objective
-
-Improve the most consequential observed weaknesses while testing whether the workflow actually helps the intended user.
-
-### Product improvements
-
-Prioritise observed failures rather than theoretical completeness. Likely interventions include:
-
-- prompt-injection handling;
-- evidence-strength presentation based on observable support and source breadth;
-- groundedness and contradiction handling;
-- theme separation without over-fragmentation;
-- making potential opportunities editable/challengeable;
-- allowing a reviewer to record a missing observation and inspect uncited records.
-
-Prompt `v2` belongs here. Compare it across the separation and fragmentation cases together rather than tuning it only to recover the known payment theme.
+- Run the full deterministic regression suite after pulling v2.
+- Run a short Streamlit smoke test for duplicate warnings and isolated-signal rendering/export.
+- Rerun the same behavioural cases with prompt/contract v2, keeping model/request settings fixed.
+- Compare changes against the pre-written acceptance criteria and record regressions as well as improvements.
 
 ### Practitioner validation
 
-Run approximately three short sessions with PMs, POs or BAs. Use comparable tasks and, where practical, vary task order or dataset to reduce familiarity effects.
+Run approximately three short PM/PO/BA sessions during this cycle.
 
 Measure directionally:
-
-- time to a reviewed, usable output;
+- time to reviewed usable output;
 - important problems missed;
 - unsupported claims retained;
-- whether the participant can explain and defend the resulting conclusions;
-- what they corrected, rejected or added.
+- whether the participant can explain/defend conclusions;
+- what they correct, reject or add.
 
-Acceptance rate alone is not a success measure because high acceptance can represent either useful output or uncritical trust.
-
-### Completion condition
-
-There is evidence about both product behaviour and whether practitioners gain a useful quality or time advantage. If they do not, narrow or stop further feature work rather than adding more evaluation machinery.
+Acceptance rate alone is not a success measure.
 
 ## Step 5 — Recheck and publish
 
-### Objective
+- Preserve before/after behavioural evidence.
+- Use one fresh holdout dataset with different language/domain.
+- If the holdout is used to tune the product, treat it as development data and create another holdout before stronger claims.
+- Summarise practitioner findings without overstating three sessions.
+- Publish a concise case study: what failed, what changed, whether reviewers benefited and what remains uncertain.
 
-Close the learning loop and turn the work into a concise product case study.
+## Trailing non-blocking activity
 
-### Work
+- Complete one independent blind practitioner review of the original 40-record reference.
+- Compare it with reference v1.0 and record disagreements/theme-boundary alternatives.
 
-- Rerun the same behavioural cases after the bounded improvement cycle.
-- Preserve regressions and remaining high-severity failures, not only improvements.
-- Use one fresh holdout dataset with different language or subject matter that has not been repeatedly tuned against.
-- If the holdout is used to improve the product, treat it as development data and create another holdout before making generalisation claims.
-- Summarise practitioner findings without overstating three sessions as general proof.
-- Publish a concise before/after account: what changed, why it mattered, whether reviewers benefited and what still failed.
+## Still not building
 
-### Completion condition
-
-The portfolio claims match the evidence, remaining weaknesses are visible, and any further work has a clear product reason.
-
-## Trailing activities
-
-These are useful evidence-strengthening activities but should not block core development unless a result materially challenges the product direction:
-
-- independent blind review of the original 40-record reference analysis;
-- comparison of that review with reference v1.0 and documentation of disagreement.
-
-## Evaluation principles from this point
-
-- The current Gemini-backed application request path/configuration is the baseline for future before/after experiments. The earlier Gemini benchmark remains historical evidence because it used a different benchmark runner/request configuration; same provider/model family does not make the experiments directly comparable.
-- The human reference is useful for repeatability but remains contestable.
-- Theme count is not a quality target: useful distinctions may be top-level themes or subthemes depending on the product decision they support.
-- RAG remains deferred because retrieval infrastructure is not presently justified; this is not a claim that retrieval has been proven reliable.
-- SQL is optional supporting analysis. Introduce SQLite/SQL only when recurring questions across versions, cases and runs become awkward in JSON/CSV.
-- Do not build a standalone SQL portfolio project or a large AI-evaluation platform.
-
-## Not building yet
-
-- Autonomous roadmap generation
-- Automatic feature prioritisation
-- Unsupervised product decisions
-- Production-scale infrastructure
-- Customer-data integrations
-- RAG or vector storage without a demonstrated retrieval problem
-- A standalone SQL portfolio project
-- A large AI-eval engineering platform
+- autonomous roadmap generation;
+- automatic feature prioritisation;
+- production-scale infrastructure;
+- customer-data integrations;
+- RAG/vector storage without a measured retrieval problem;
+- a standalone SQL portfolio project;
+- a large AI-evaluation platform.
 
 ## Current product question
 
 > Can an LLM help a product practitioner reach a useful, defensible analysis of qualitative feedback faster while preserving evidence traceability and human judgement?
 
-The next portfolio milestone is not a larger benchmark. It is a completed learning cycle showing what failed, what changed, whether practitioners benefited and what remains uncertain.
+The next milestone is evidence that the bounded v2 changes improve the measured failure modes without damaging existing strengths, alongside early practitioner evidence about whether the workflow actually helps.
