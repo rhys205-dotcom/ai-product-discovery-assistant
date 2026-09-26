@@ -101,6 +101,7 @@ if st.button("Analyse feedback", type="primary"):
             "dataset_sha256": dataset_sha256,
             "dataset_source": dataset_source,
             "record_count": result["record_count"],
+            "provider": result["provider"],
             "model": result["model"],
             "prompt_sha256": result["prompt_sha256"],
             "attempted_at": attempted_at,
