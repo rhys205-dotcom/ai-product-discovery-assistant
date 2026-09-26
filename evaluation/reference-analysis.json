@@ -1,8 +1,14 @@
 {
   "reference_version": "1.0",
+  "reference_status": "Provisional human baseline pending independent practitioner review",
   "dataset": "data/sample-feedback.csv",
   "record_count": 40,
   "method": "Human review of every record, grouping recurring problems and retaining contradictory or qualifying evidence.",
+  "independent_review": {
+    "status": "pending",
+    "instructions": "evaluation/independent-reference-review.md",
+    "rule": "Do not silently change this reference after review. Record agreements, disagreements and any proposed revision separately before deciding whether to version the reference."
+  },
   "themes": [
     {
       "theme_id": "T01",
@@ -36,6 +42,7 @@
   "notes": [
     "Theme boundaries overlap because a single feedback record can support more than one customer problem.",
     "The reference is a documented human judgement, not objective ground truth.",
+    "The third theme is specifically subject to independent review because several supporting records also fit the broader payment-status problem.",
     "Future reviewers should record disagreements rather than silently changing the reference."
   ]
 }
