@@ -3,8 +3,11 @@ import unittest
 from unittest.mock import patch
 
 from src.analyse_feedback import (
+    PROMPT_VERSION,
     analyse_feedback_with_metadata,
+    build_prompt,
     dataset_fingerprint,
+    find_exact_duplicate_groups,
     validate_analysis_result,
     validate_feedback_records,
 )
@@ -42,7 +45,16 @@ VALID_ANALYSIS = {
             "potential_opportunity": "Investigate an exception-focused review workflow.",
             "contradictory_evidence": [],
         }
-    ]
+    ],
+    "isolated_signals": [],
+}
+
+VALID_SIGNAL = {
+    "signal": "Possible cross-account record access",
+    "evidence_ids": ["F002"],
+    "why_it_matters": "If reproducible, the observation could indicate a data-isolation problem.",
+    "uncertainty": "This is one report and does not confirm a breach or root cause.",
+    "recommended_next_step": "Verify the report and reproduce the access path before deciding on remediation.",
 }
 
 
@@ -99,11 +111,42 @@ class FeedbackValidationTests(unittest.TestCase):
         padded[0]["feedback"] = "  Month end reconciliation takes too long.  "
         self.assertEqual(dataset_fingerprint(VALID_FEEDBACK), dataset_fingerprint(padded))
 
+    def test_exact_duplicate_groups_are_flagged_without_assuming_identity(self):
+        feedback = [
+            dict(VALID_FEEDBACK[0], feedback_id="D1"),
+            dict(VALID_FEEDBACK[0], feedback_id="D2"),
+            dict(VALID_FEEDBACK[1], feedback_id="D3"),
+        ]
+        groups = find_exact_duplicate_groups(feedback)
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0]["feedback_ids"], ["D1", "D2"])
+        self.assertEqual(groups[0]["count"], 2)
+        self.assertEqual(groups[0]["source"], "Interview")
+        self.assertEqual(groups[0]["persona"], "Finance")
+
+    def test_varied_feedback_is_not_marked_duplicate(self):
+        self.assertEqual(find_exact_duplicate_groups(VALID_FEEDBACK), [])
+
+    def test_prompt_exposes_duplicate_context_and_abstention_rules(self):
+        feedback = [
+            dict(VALID_FEEDBACK[0], feedback_id="D1"),
+            dict(VALID_FEEDBACK[0], feedback_id="D2"),
+        ]
+        prompt = build_prompt(feedback)
+        self.assertIn("D1, D2 repeat the same text/source/persona", prompt)
+        self.assertIn("It is valid to return no themes", prompt)
+        self.assertIn("neutral/non-applicable evidence, not contradiction", prompt)
+        self.assertIn("isolated_signals", prompt)
+
 
 class AnalysisContractTests(unittest.TestCase):
     def test_rejects_missing_theme_fields(self):
         with self.assertRaisesRegex(ValueError, "missing required fields"):
-            validate_analysis_result({"themes": [{}]})
+            validate_analysis_result({"themes": [{}], "isolated_signals": []})
+
+    def test_requires_isolated_signals_list(self):
+        with self.assertRaisesRegex(ValueError, "isolated_signals"):
+            validate_analysis_result({"themes": []})
 
     def test_rejects_invalid_evidence_strength(self):
         result = json.loads(json.dumps(VALID_ANALYSIS))
@@ -117,8 +160,19 @@ class AnalysisContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate ID F001"):
             validate_analysis_result(result)
 
-    def test_accepts_empty_theme_list_as_valid_abstention(self):
-        self.assertEqual(validate_analysis_result({"themes": []}), {"themes": []})
+    def test_rejects_incomplete_isolated_signal(self):
+        with self.assertRaisesRegex(ValueError, "missing required fields"):
+            validate_analysis_result(
+                {"themes": [], "isolated_signals": [{"signal": "Possible issue"}]}
+            )
+
+    def test_accepts_valid_isolated_signal(self):
+        result = {"themes": [], "isolated_signals": [dict(VALID_SIGNAL)]}
+        self.assertEqual(validate_analysis_result(result), result)
+
+    def test_accepts_empty_theme_and_signal_lists_as_valid_abstention(self):
+        result = {"themes": [], "isolated_signals": []}
+        self.assertEqual(validate_analysis_result(result), result)
 
 
 class AnalysisMetadataTests(unittest.TestCase):
@@ -132,10 +186,21 @@ class AnalysisMetadataTests(unittest.TestCase):
         self.assertEqual(result["raw_output"], raw)
         self.assertEqual(result["provider"], "Google")
         self.assertEqual(result["model"], "test-model")
+        self.assertEqual(result["prompt_version"], PROMPT_VERSION)
         self.assertEqual(result["record_count"], 2)
         self.assertEqual(result["dataset_sha256"], dataset_fingerprint(VALID_FEEDBACK))
+        self.assertEqual(result["duplicate_evidence_groups"], [])
         self.assertEqual(len(result["prompt_sha256"]), 64)
         self.assertTrue(result["generated_at"])
+
+    def test_metadata_includes_duplicate_groups(self):
+        feedback = [
+            dict(VALID_FEEDBACK[0], feedback_id="D1"),
+            dict(VALID_FEEDBACK[0], feedback_id="D2"),
+        ]
+        raw = json.dumps({"themes": [], "isolated_signals": []})
+        result = analyse_feedback_with_metadata(feedback, client=FakeClient(output_text=raw))
+        self.assertEqual(result["duplicate_evidence_groups"][0]["feedback_ids"], ["D1", "D2"])
 
     def test_rejects_invalid_json(self):
         client = FakeClient(output_text="not json")
@@ -143,7 +208,7 @@ class AnalysisMetadataTests(unittest.TestCase):
             analyse_feedback_with_metadata(VALID_FEEDBACK, client=client)
 
     def test_rejects_structurally_incomplete_json(self):
-        client = FakeClient(output_text='{"themes":[{}]}')
+        client = FakeClient(output_text='{"themes":[{}],"isolated_signals":[]}')
         with self.assertRaisesRegex(ValueError, "missing required fields"):
             analyse_feedback_with_metadata(VALID_FEEDBACK, client=client)
 
@@ -158,8 +223,8 @@ class ReviewIntegrityTests(unittest.TestCase):
         state = {
             "active_dataset_sha256": "dataset-a",
             "active_dataset_source": "a.csv",
-            "analysis": {"themes": []},
-            "analysis_original": {"themes": []},
+            "analysis": {"themes": [], "isolated_signals": []},
+            "analysis_original": {"themes": [], "isolated_signals": []},
             "analysis_raw_output": "{}",
             "analysis_metadata": {"dataset_sha256": "dataset-a"},
             "last_analysis_failure": {"error": "old failure"},
@@ -185,7 +250,7 @@ class ReviewIntegrityTests(unittest.TestCase):
     def test_same_dataset_keeps_bound_analysis(self):
         state = {
             "active_dataset_sha256": "dataset-a",
-            "analysis": {"themes": []},
+            "analysis": {"themes": [], "isolated_signals": []},
             "analysis_metadata": {"dataset_sha256": "dataset-a"},
         }
         changed = bind_dataset(state, "dataset-a", "renamed.csv")
@@ -195,7 +260,7 @@ class ReviewIntegrityTests(unittest.TestCase):
 
     def test_new_analysis_attempt_clears_review_state(self):
         state = {
-            "analysis": {"themes": []},
+            "analysis": {"themes": [], "isolated_signals": []},
             "review:run-a:0:note": "old note",
             "note-0": "legacy note",
             "last_analysis_failure": {"error": "old"},
@@ -212,31 +277,46 @@ class ReviewIntegrityTests(unittest.TestCase):
         )
         self.assertFalse(analysis_matches_dataset(None, "dataset-a"))
 
-    def test_export_preserves_original_reviewed_output_and_provenance(self):
+    def test_export_preserves_original_reviewed_output_signals_and_provenance(self):
         metadata = {
             "run_id": "run-123",
             "dataset_sha256": "dataset-a",
             "dataset_source": "feedback.csv",
             "provider": "Google",
             "model": "test-model",
+            "prompt_version": "v2",
         }
         original = json.loads(json.dumps(VALID_ANALYSIS))
+        original["isolated_signals"] = [dict(VALID_SIGNAL)]
         reviewed = json.loads(json.dumps(VALID_ANALYSIS["themes"]))
         reviewed[0]["interpretation"] = "Human-edited interpretation."
-        reviewed[0]["human_review"] = {"decision": "Edit and accept", "note": "Tightened claim."}
+        reviewed[0]["human_review"] = {
+            "decision": "Edit and accept",
+            "note": "Tightened claim.",
+        }
+        reviewed_signals = [dict(VALID_SIGNAL)]
+        reviewed_signals[0]["uncertainty"] = "Human-edited uncertainty."
+        reviewed_signals[0]["human_review"] = {
+            "decision": "Edit and accept",
+            "note": "Keep investigation cautious.",
+        }
 
         export = build_review_export(
             metadata,
             original,
             json.dumps(original),
             reviewed,
+            reviewed_signals=reviewed_signals,
             exported_at="2026-09-26T14:30:00+00:00",
         )
 
+        self.assertEqual(export["export_version"], "2.1")
         self.assertEqual(export["provenance"]["run_id"], "run-123")
         self.assertEqual(export["provenance"]["dataset_sha256"], "dataset-a")
         self.assertEqual(export["provenance"]["provider"], "Google")
-        self.assertEqual(export["provenance"]["exported_at"], "2026-09-26T14:30:00+00:00")
+        self.assertEqual(
+            export["provenance"]["exported_at"], "2026-09-26T14:30:00+00:00"
+        )
         self.assertEqual(
             export["original_model_output"]["parsed"]["themes"][0]["interpretation"],
             VALID_ANALYSIS["themes"][0]["interpretation"],
@@ -244,6 +324,10 @@ class ReviewIntegrityTests(unittest.TestCase):
         self.assertEqual(
             export["reviewed_analysis"]["themes"][0]["interpretation"],
             "Human-edited interpretation.",
+        )
+        self.assertEqual(
+            export["reviewed_analysis"]["isolated_signals"][0]["uncertainty"],
+            "Human-edited uncertainty.",
         )
 
 
