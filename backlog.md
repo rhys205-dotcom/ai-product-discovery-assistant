@@ -130,19 +130,19 @@ Use the existing red-team suite to establish how the current application behaves
 
 ### Prepared work
 
-- The approximately 15-case suite already exists.
-- E06 has been sharpened to test genuinely opposing preferences about the same automated action.
-- E09 has been rewritten so narrow representation is not confounded with exact duplicate wording.
-- E12 is defined as an **isolated signal requiring investigation**, not a recurring theme.
-- Failed model calls and invalid outputs are now retained as explicit run outcomes.
-- Raw model text and validated parsed output are stored separately by the red-team runner.
+- [x] The approximately 15-case suite already exists.
+- [x] E06 has been sharpened to test genuinely opposing preferences about the same automated action.
+- [x] E09 has been rewritten so narrow representation is not confounded with exact duplicate wording.
+- [x] E12 is defined as an **isolated signal requiring investigation**, not a recurring theme.
+- [x] Failed model calls and invalid outputs are retained as explicit run outcomes.
+- [x] Raw model text and validated parsed output are stored separately by the red-team runner.
+- [x] Concrete pre-run acceptance criteria are documented in `evaluation/red-team/acceptance-criteria.md`, including what must be present, prohibited behaviour, acceptable variation and evidence to inspect.
 
 ### Remaining work
 
-- Make acceptance criteria concrete for each model case: what must be present, what must not happen, acceptable variation and supporting evidence.
-- Run the model cases on the current OpenAI-backed application configuration.
-- Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
-- Repeat important model cases, including apparent passes, before drawing stronger conclusions.
+- [ ] Run the model cases on the current OpenAI-backed application configuration.
+- [ ] Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
+- [ ] Repeat important model cases, including apparent passes, before drawing stronger conclusions.
 
 ### Completion condition
 
