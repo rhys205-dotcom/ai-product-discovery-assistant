@@ -9,7 +9,8 @@ The first controlled Gemini benchmark remains useful historical evidence, but it
 - a **contestable human reference baseline**, not objective ground truth;
 - **scorer v2**, which keeps unmatched findings visible and scores evidence at the finding–citation relationship level;
 - the **current OpenAI-backed application configuration** as the baseline for future before/after product experiments;
-- the Gemini benchmark as a separately labelled historical experiment.
+- the Gemini benchmark as a separately labelled historical experiment;
+- deterministic trust controls for dataset identity, review state, model-response structure and export provenance.
 
 An independent practitioner review of the three-theme reference is still pending. It is now a **trailing, non-blocking evidence-strengthening activity** rather than a gate for continued development. See [`independent-reference-review.md`](independent-reference-review.md).
 
@@ -39,15 +40,45 @@ The original scorer had several blind spots:
 
 Scorer v2 repairs those mechanical issues without pretending that semantic judgement can be fully automated.
 
-## Verify the scorer
+## Deterministic trust controls
+
+The pre-fix trust failures are preserved in [`red-team/trust-baseline.md`](red-team/trust-baseline.md).
+
+The repaired implementation now:
+
+- rejects blank or duplicate feedback IDs before analysis;
+- fingerprints the ordered dataset with SHA-256;
+- binds analysis and reviewer state to dataset/run provenance;
+- invalidates stale findings and review controls when dataset or analysis changes;
+- validates the minimum model-response contract before rendering findings;
+- clears earlier successful output before a new analysis attempt;
+- records failed calls and invalid responses explicitly;
+- preserves raw/original model output separately from reviewer changes; and
+- includes provenance in reviewed exports.
+
+`test_trust_foundation.py` exercises the pure validation, state-binding and export helpers. E14/E15 remain useful Streamlit smoke tests to confirm the UI wiring behaves as intended.
+
+## Run the deterministic tests
 
 From the repository root:
+
+```bash
+python -m unittest discover -s evaluation -p "test_*.py"
+```
+
+To run only scorer-v2 tests:
 
 ```bash
 python -m unittest discover -s evaluation -p "test_evaluate.py"
 ```
 
-Score a human-mapped run with:
+To run only trust-foundation tests:
+
+```bash
+python -m unittest discover -s evaluation -p "test_trust_foundation.py"
+```
+
+## Score a human-mapped run
 
 ```bash
 python evaluation/evaluate.py evaluation/runs/<benchmark-id>/run-1.json
@@ -74,13 +105,13 @@ The stored v1 score files are preserved as historical artefacts. [`results.md`](
 
 This benchmark is **not** the future application baseline because the current application uses a different provider and response path. Future prompt comparisons should hold the current application configuration, dataset and model/request settings constant.
 
-## v0.5 red-team suite
+## Red-team suite
 
-The current adversarial suite covers prompt injection, duplicated evidence, source dominance, unsupported embellishment, low-frequency/high-severity signals, identifier integrity and stale application state.
+The adversarial suite covers prompt injection, duplicated evidence, source dominance, unsupported embellishment, low-frequency/high-severity signals, identifier integrity and stale application state.
 
-See [`red-team/README.md`](red-team/README.md) for the case specification, datasets, baseline runner and manual scorecard.
+See [`red-team/README.md`](red-team/README.md) for the case specification, datasets, runner, deterministic smoke tests and manual scorecard.
 
-Known deterministic trust failures such as identifier and stale-state problems should be **recorded and then fixed promptly**; they do not need to wait for every model case to be completed.
+The red-team runner now stores raw model text and validated output separately, and records failed calls or invalid responses as explicit run outcomes while still completing the suite manifest.
 
 ## Files
 
@@ -90,9 +121,10 @@ Known deterministic trust failures such as identifier and stale-state problems s
 - `example-run.json` — deterministic fixture; not claimed as model performance.
 - `evaluate.py` — relationship-aware scorer v2.
 - `test_evaluate.py` — regression tests for scorer blind spots.
+- `test_trust_foundation.py` — regression tests for identifier, response, state and export integrity.
 - `run_gemini_benchmark.py` — historical three-run Gemini benchmark runner.
 - `results.md` — historical results, revised interpretation and scorer-v2 re-score.
-- `red-team/` — adversarial evaluation suite and baseline workspace.
+- `red-team/` — adversarial evaluation suite, deterministic baseline and model-run workspace.
 
 ## Evaluation rules from this point
 
@@ -101,8 +133,9 @@ Known deterministic trust failures such as identifier and stale-state problems s
 3. Treat reference mapping as human judgement and record disagreement.
 4. Surface unmatched findings rather than assuming the reference is exhaustive.
 5. Report individual failures and severity, not only aggregate percentages.
-6. Keep holdout data genuinely fresh; once it is used to tune the product, it is no longer a holdout.
+6. Keep dataset identity and reviewer provenance attached to every analysis/export.
+7. Keep holdout data genuinely fresh; once it is used to tune the product, it is no longer a holdout.
 
 ## Important limitation
 
-Even scorer v2 does not determine whether an interpretation is commercially useful, whether a proposed opportunity is sensible, or whether a human reviewer makes a better product decision. Those require qualitative review and practitioner validation.
+Even scorer v2 and the trust controls do not determine whether an interpretation is commercially useful, whether a proposed opportunity is sensible, or whether a human reviewer makes a better product decision. Those require qualitative review and practitioner validation.
