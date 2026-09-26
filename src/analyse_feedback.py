@@ -5,10 +5,11 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from openai import OpenAI
+from google import genai
 
 
 DATA_FILE = Path(__file__).parent.parent / "data" / "sample-feedback.csv"
+DEFAULT_MODEL = "gemini-3.5-flash"
 REQUIRED_FEEDBACK_FIELDS = ("feedback_id", "source", "persona", "feedback")
 REQUIRED_THEME_FIELDS = (
     "theme",
@@ -20,6 +21,38 @@ REQUIRED_THEME_FIELDS = (
     "contradictory_evidence",
 )
 EVIDENCE_STRENGTHS = {"Strong", "Moderate", "Limited"}
+
+FINDINGS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "themes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "theme": {"type": "string"},
+                    "pain_point": {"type": "string"},
+                    "evidence_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "evidence_strength": {
+                        "type": "string",
+                        "enum": ["Strong", "Moderate", "Limited"],
+                    },
+                    "interpretation": {"type": "string"},
+                    "potential_opportunity": {"type": "string"},
+                    "contradictory_evidence": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": list(REQUIRED_THEME_FIELDS),
+            },
+        }
+    },
+    "required": ["themes"],
+}
 
 
 def validate_feedback_records(feedback):
@@ -212,18 +245,27 @@ def validate_analysis_result(result):
 
 
 def analyse_feedback_with_metadata(feedback, client=None):
-    """Analyse feedback and preserve raw output plus run metadata."""
+    """Analyse feedback with Gemini and preserve raw output plus run metadata."""
     feedback = validate_feedback_records(feedback)
 
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if client is None and not api_key:
-        raise RuntimeError("Set OPENAI_API_KEY before running an analysis.")
+        raise RuntimeError("Set GEMINI_API_KEY before running an analysis.")
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-5.6")
+    model = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
     prompt = build_prompt(feedback)
-    active_client = client or OpenAI(api_key=api_key)
-    response = active_client.responses.create(model=model, input=prompt)
-    raw_output = getattr(response, "output_text", None)
+    active_client = client or genai.Client(api_key=api_key)
+    interaction = active_client.interactions.create(
+        model=model,
+        input=prompt,
+        store=False,
+        response_format={
+            "type": "text",
+            "mime_type": "application/json",
+            "schema": FINDINGS_SCHEMA,
+        },
+    )
+    raw_output = getattr(interaction, "output_text", None)
 
     if not isinstance(raw_output, str) or not raw_output.strip():
         raise ValueError("The model returned no usable text output.")
@@ -237,6 +279,7 @@ def analyse_feedback_with_metadata(feedback, client=None):
     return {
         "analysis": result,
         "raw_output": raw_output,
+        "provider": "Google",
         "model": model,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
