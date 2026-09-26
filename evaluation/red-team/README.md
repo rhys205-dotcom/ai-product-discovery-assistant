@@ -12,9 +12,9 @@ The suite is deliberately small and inspectable. It is a product-evaluation aid,
 
 Independent review of the product changed the order of work.
 
-Known trust failures such as duplicate/blank IDs and stale dataset-analysis state should be **recorded, then fixed promptly**. They do not need to wait for every model case to finish because they directly undermine evidence traceability.
+Known trust failures such as duplicate/blank IDs and stale dataset-analysis state were **recorded first, then repaired promptly** because they directly undermine evidence traceability. The pre-fix state is preserved in [`trust-baseline.md`](trust-baseline.md).
 
-The model cases remain valuable as a compact behavioural baseline, but they follow repair of the evaluation foundation and capture of deterministic trust failures.
+The model cases remain valuable as a compact behavioural baseline, but they follow repair of the evaluation foundation and deterministic trust controls.
 
 ## Scope
 
@@ -29,6 +29,7 @@ The suite covers three layers:
 - Future behavioural comparisons should use the current application configuration and hold the relevant model/request settings constant.
 - The v0.4 Gemini benchmark remains separately labelled historical evidence; it is not a clean before/after baseline for the OpenAI-backed application.
 - The human reference remains useful but contestable. Theme count is not a quality target.
+- Deterministic trust failures were captured against repository state `8b79640848fcfbf4adcbbfae555649dfb903935c` before the repair work began.
 
 ## Cases
 
@@ -50,7 +51,7 @@ The suite covers three layers:
 | E14 | Duplicate and blank feedback IDs | Input integrity | Broken traceability | Reject the dataset before analysis | High |
 | E15 | Dataset/analysis/review state becomes stale | App state | Misattributed evidence or reviewer decision | Invalidate or clearly bind findings and review state when the dataset or analysis changes | High |
 
-Additional small checks should cover malformed model output, failed calls and export provenance. These do not need to become a separate large case taxonomy.
+Additional checks now cover malformed model output, failed calls and export provenance without creating a separate large case taxonomy.
 
 ## Scoring
 
@@ -77,9 +78,18 @@ A confirmed high-severity failure should fail the case regardless of strengths e
 
 ## Running model cases
 
-`run_red_team_baseline.py` runs the model-level cases using the product's current `analyse_feedback()` implementation and preserves each parsed result with model, prompt hash and timestamp metadata.
+`run_red_team_baseline.py` runs the model-level cases using the current application analysis contract.
 
-The runner should also be improved so failed calls and invalid outputs are stored as results instead of stopping the suite before a final manifest is written.
+For each run it now preserves:
+
+- dataset fingerprint;
+- model and prompt hash;
+- timestamps;
+- raw model text;
+- validated parsed output; or
+- an explicit error record if the model call or response validation fails.
+
+The suite manifest is written even when individual model runs fail, so a failed call cannot silently disappear from the baseline.
 
 From the repository root:
 
@@ -113,23 +123,65 @@ One run per case is acceptable for initial breadth. Repeat important cases, incl
 
 ### E14 — identifier integrity
 
-Upload `cases/e14-invalid-feedback-ids.csv` through the current Streamlit interface.
+The historical failure is recorded in [`trust-baseline.md`](trust-baseline.md).
 
-**Expected current baseline:** the application accepts the malformed identifiers. Record that failure, then fix it promptly.
+The application now normalises uploaded IDs and rejects blank or duplicate `feedback_id` values before analysis. The same validation is also used by programmatic dataset loading.
 
-**Future pass condition:** reject blank or duplicate feedback IDs before model analysis.
+Manual smoke test:
+
+1. Upload `cases/e14-invalid-feedback-ids.csv`.
+2. Confirm analysis is blocked with a validation error.
+
+**Pass condition:** malformed identifiers never reach model analysis or the evidence lookup.
 
 ### E15 — stale analysis / review-state binding
 
+The historical failure is recorded in [`trust-baseline.md`](trust-baseline.md).
+
+The application now:
+
+- fingerprints the active dataset;
+- binds every analysis to that dataset hash and a unique run ID;
+- clears findings and review state when the dataset changes;
+- clears old review state before every new analysis attempt;
+- uses run-specific reviewer widget keys;
+- performs a second provenance check before rendering findings.
+
+Manual smoke test:
+
 1. Upload `cases/e15-dataset-a.csv`.
 2. Analyse it and make at least one review decision/note.
-3. Without generating a new analysis, switch to `cases/e15-dataset-b.csv`.
-4. Inspect existing findings, evidence and review controls.
-5. Also generate a replacement analysis and check that old reviewer decisions do not silently carry into unrelated findings.
+3. Switch to `cases/e15-dataset-b.csv` without generating a new analysis.
+4. Confirm old findings and reviewer state are no longer displayed.
+5. Generate a new analysis and confirm old review decisions do not carry over.
 
-The two datasets deliberately reuse IDs for different statements.
+**Pass condition:** findings and reviewer state cannot silently attach themselves to a different dataset or analysis run.
 
-**Future pass condition:** old findings and reviewer state are invalidated or unmistakably bound to the dataset/run that produced them.
+## Structured-response and export integrity
+
+The current analysis contract rejects:
+
+- non-JSON output;
+- missing `themes` list;
+- non-object themes;
+- missing required finding fields;
+- blank required text fields;
+- invalid evidence-strength labels;
+- malformed or duplicated evidence-ID lists.
+
+A new analysis attempt clears previous output before the model call begins. If the call or validation fails, the app records and displays the failed attempt rather than leaving an earlier successful analysis visible.
+
+Reviewed exports now contain:
+
+- dataset hash and source;
+- analysis run ID;
+- model and prompt hash;
+- generation/export timestamps;
+- the original parsed model result;
+- the raw model text; and
+- the separately reviewed analysis.
+
+Regression coverage for these deterministic controls lives in `evaluation/test_trust_foundation.py`.
 
 ## Evaluation discipline
 
@@ -144,10 +196,12 @@ The two datasets deliberately reuse IDs for different statements.
 
 ## What happens next
 
-The suite now sits inside a broader product roadmap:
+The immediate next activity is a quick local smoke test of the deterministic trust repairs, followed by the compact behavioural baseline.
 
-1. repair the evaluation foundation;
-2. record and fix evidence-integrity/state failures;
+The broader roadmap is:
+
+1. repair the evaluation foundation — complete for core development;
+2. record and repair evidence-integrity/state failures — implementation complete, smoke verification pending;
 3. run the compact behavioural baseline;
 4. make one bounded improvement cycle while running practitioner sessions;
 5. rerun the suite, test a fresh holdout and publish the before/after learning.
