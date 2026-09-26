@@ -151,6 +151,13 @@ if analysis and (
     metadata = None
     st.warning("Previous findings were cleared because they did not belong to the active dataset.")
 
+failure = st.session_state.get("last_analysis_failure")
+if not analysis and failure and failure.get("dataset_sha256") == dataset_sha256:
+    st.warning(
+        "Last analysis attempt failed and no earlier findings were retained. "
+        f"Run {failure['run_id'][:8]} · {failure['error_type']}: {failure['error']}"
+    )
+
 if analysis:
     themes = analysis.get("themes", [])
     if not themes:
