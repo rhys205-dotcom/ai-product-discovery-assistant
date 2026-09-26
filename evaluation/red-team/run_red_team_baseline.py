@@ -60,7 +60,7 @@ def main():
 
     manifest = load_manifest()
     cases = selected_cases(manifest, args.cases)
-    model = os.environ.get("OPENAI_MODEL", "gpt-5.6")
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
     suite_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     suite_dir = OUTPUT_ROOT / suite_stamp
     suite_dir.mkdir(parents=True, exist_ok=False)
@@ -68,9 +68,10 @@ def main():
     suite_manifest = {
         "suite_version": manifest["suite_version"],
         "started_at": datetime.now(timezone.utc).isoformat(),
+        "provider": "Google",
         "model": model,
         "runs_per_case": args.runs,
-        "baseline_note": "Current OpenAI-backed application analysis contract; failures and invalid outputs are retained as results.",
+        "baseline_note": "Current Gemini-backed application analysis contract; failures and invalid outputs are retained as results.",
         "cases": [],
     }
 
@@ -105,6 +106,7 @@ def main():
                         "case_name": case["name"],
                         "dataset": case["dataset"],
                         "dataset_sha256": case_record["dataset_sha256"],
+                        "provider": "Google",
                         "model": model,
                         "prompt_sha256": case_record["prompt_sha256"],
                         "run_number": run_number,
@@ -123,6 +125,7 @@ def main():
                         "case_name": case["name"],
                         "dataset": case["dataset"],
                         "dataset_sha256": result["dataset_sha256"],
+                        "provider": result["provider"],
                         "model": result["model"],
                         "prompt_sha256": result["prompt_sha256"],
                         "run_number": run_number,
