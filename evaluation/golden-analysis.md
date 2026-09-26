@@ -1,12 +1,12 @@
-# Human Reference Analysis — v1.0
+# Human Reference Baseline — v1.0
 
-## Purpose and source of truth
+## Purpose
 
 This document is the readable explanation of the human reference used to evaluate the 40-record synthetic feedback dataset.
 
-The machine-readable [`reference-analysis.json`](reference-analysis.json) is the scoring source of truth. It was created before the controlled Gemini benchmark. This narrative mirrors its three themes, evidence sets, qualifying evidence and deliberate distractors.
+The machine-readable [`reference-analysis.json`](reference-analysis.json) is the repeatable scoring baseline created before the controlled Gemini benchmark. It is **not** objective ground truth. Theme boundaries can overlap, and a different practitioner may organise the same evidence differently while still producing a useful analysis.
 
-The reference is a documented human judgement rather than objective ground truth. Theme boundaries can overlap, and future reviewers should record disagreement rather than silently changing the baseline.
+An independent blind practitioner review is now explicitly required before using this reference to justify further optimisation. See [`independent-reference-review.md`](independent-reference-review.md). The existing v1.0 reference will not be silently rewritten after that review; agreements and disagreements will be recorded first.
 
 ---
 
@@ -72,33 +72,35 @@ Teams need a clearer record of payment events and customer communications to avo
 
 `F023`
 
-This theme overlaps with payment-status visibility but represents a distinct need for history and traceability. A useful analysis may recognise the relationship while keeping the customer problem separately visible.
+This proposed theme overlaps materially with payment-status visibility. `F013` and `F037` are the clearest evidence for a communication/history need; several other records can plausibly remain inside the broader payment-status problem. The independent review should therefore test whether keeping this distinction separately visible changes a useful product investigation or decision.
 
 ---
 
 ## Deliberate distractors
 
-The dataset contains isolated requests that should not become major themes:
+The dataset contains isolated requests that should not become major themes solely because they appear in the data:
 
 - `F009` — dark mode
-- `F018` — isolated preference not part of a recurring problem
+- `F018` — search speed
 - `F024` — additional dashboard colours
 - `F030` — receipt logo customisation
 - `F039` — larger font size
 
-A model should not present these as significant recurring customer problems based on this dataset.
+These records may still represent valid individual needs. The reference only says that this dataset does not establish them as recurring problems.
 
 ---
 
 ## Acceptable variation
 
-The model does not need to reproduce the exact wording used here. A useful analysis may use different labels or problem-statement wording, provided that it:
+The model does not need to reproduce the exact wording or exactly three top-level themes. A useful analysis may use different labels, subthemes or problem-statement wording, provided that it:
 
-- identifies materially distinct customer problems;
-- cites evidence that genuinely supports the mapped theme;
-- does not elevate isolated distractors;
+- identifies materially useful customer problems;
+- cites evidence that genuinely supports the mapped finding;
+- does not elevate isolated records into broad claims without qualification;
 - preserves important qualifying evidence;
 - separates customer evidence from interpretation and proposed action.
+
+Theme count is not itself a quality target.
 
 ---
 
@@ -106,11 +108,13 @@ The model does not need to reproduce the exact wording used here. A useful analy
 
 | Measure | Question |
 |---|---|
-| Theme coverage | How many of the three reference themes were identified? |
+| Theme coverage | How many reference theme distinctions were represented? |
 | Citation validity | Do cited feedback IDs exist in the dataset? |
-| Evidence precision | Do valid citations support the matched theme? |
-| Reference evidence coverage | How much of the documented reference evidence was found? |
-| Contradiction coverage | Was expected qualifying evidence surfaced? |
-| Distractor citations | Were isolated requests incorrectly promoted as core evidence? |
+| Evidence precision | Does each citation support the finding it is attached to? |
+| Reference evidence coverage | How much of the documented reference evidence was represented for the mapped theme? |
+| Qualification coverage | Was documented qualifying evidence surfaced? |
+| Qualification precision | Were records labelled as qualifying actually relevant to that mapped theme? |
+| Unmatched findings | Did the model produce findings that require human assessment outside the current reference? |
+| Distractor citations | Were isolated requests incorrectly used as core evidence for a broad finding? |
 
-Human mapping remains explicit because deciding whether differently worded themes represent the same underlying customer problem is a judgement, not an objective string-matching task.
+Human mapping remains explicit because deciding whether differently worded findings represent the same underlying customer problem is a judgement, not an objective string-matching task.
