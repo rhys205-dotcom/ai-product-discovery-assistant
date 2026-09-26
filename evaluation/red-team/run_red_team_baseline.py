@@ -11,7 +11,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.analyse_feedback import analyse_feedback, build_prompt, load_feedback
+from src.analyse_feedback import (
+    analyse_feedback_with_metadata,
+    build_prompt,
+    dataset_fingerprint,
+    load_feedback,
+)
 
 
 MANIFEST = ROOT / "evaluation" / "red-team" / "cases.json"
@@ -19,7 +24,7 @@ OUTPUT_ROOT = ROOT / "evaluation" / "red-team" / "runs"
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run v0.5 red-team model cases against the current product baseline.")
+    parser = argparse.ArgumentParser(description="Run red-team model cases against the current application configuration.")
     parser.add_argument("--cases", help="Comma-separated case IDs, for example E10,E11,E12")
     parser.add_argument("--runs", type=int, default=1, help="Number of runs per selected model case (default: 1)")
     return parser.parse_args()
@@ -44,6 +49,10 @@ def prompt_hash(feedback):
     return hashlib.sha256(build_prompt(feedback).encode("utf-8")).hexdigest()
 
 
+def write_json(path, payload):
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def main():
     args = parse_args()
     if args.runs < 1:
@@ -61,53 +70,84 @@ def main():
         "started_at": datetime.now(timezone.utc).isoformat(),
         "model": model,
         "runs_per_case": args.runs,
-        "baseline_note": "Current src/analyse_feedback.py behaviour; no v0.5 red-team fixes applied before this run.",
+        "baseline_note": "Current OpenAI-backed application analysis contract; failures and invalid outputs are retained as results.",
         "cases": [],
     }
 
-    for case in cases:
-        dataset_path = ROOT / case["dataset"]
-        feedback = load_feedback(dataset_path)
-        case_dir = suite_dir / case["id"]
-        case_dir.mkdir()
-        case_record = {
-            "id": case["id"],
-            "name": case["name"],
-            "dataset": case["dataset"],
-            "planned_severity": case["severity"],
-            "expected": case["expected"],
-            "record_count": len(feedback),
-            "prompt_sha256": prompt_hash(feedback),
-            "runs": [],
-        }
-
-        for run_number in range(1, args.runs + 1):
-            started = datetime.now(timezone.utc)
-            result = analyse_feedback(feedback)
-            finished = datetime.now(timezone.utc)
-            output = {
-                "case_id": case["id"],
-                "case_name": case["name"],
+    try:
+        for case in cases:
+            dataset_path = ROOT / case["dataset"]
+            feedback = load_feedback(dataset_path)
+            case_dir = suite_dir / case["id"]
+            case_dir.mkdir()
+            case_record = {
+                "id": case["id"],
+                "name": case["name"],
                 "dataset": case["dataset"],
-                "model": model,
-                "prompt_sha256": case_record["prompt_sha256"],
-                "run_number": run_number,
-                "started_at": started.isoformat(),
-                "finished_at": finished.isoformat(),
-                "raw_result": result,
+                "dataset_sha256": dataset_fingerprint(feedback),
+                "planned_severity": case["severity"],
+                "expected": case["expected"],
+                "record_count": len(feedback),
+                "prompt_sha256": prompt_hash(feedback),
+                "runs": [],
             }
-            output_file = case_dir / f"run-{run_number}.json"
-            output_file.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
-            case_record["runs"].append(str(output_file.relative_to(ROOT)))
-            print(f"{case['id']} run {run_number}: saved {output_file.relative_to(ROOT)}")
 
-        suite_manifest["cases"].append(case_record)
+            for run_number in range(1, args.runs + 1):
+                started = datetime.now(timezone.utc)
+                output_file = case_dir / f"run-{run_number}.json"
 
-    suite_manifest["finished_at"] = datetime.now(timezone.utc).isoformat()
-    (suite_dir / "manifest.json").write_text(
-        json.dumps(suite_manifest, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-    print(f"\nSuite manifest: {(suite_dir / 'manifest.json').relative_to(ROOT)}")
+                try:
+                    result = analyse_feedback_with_metadata(feedback)
+                except Exception as error:
+                    finished = datetime.now(timezone.utc)
+                    output = {
+                        "case_id": case["id"],
+                        "case_name": case["name"],
+                        "dataset": case["dataset"],
+                        "dataset_sha256": case_record["dataset_sha256"],
+                        "model": model,
+                        "prompt_sha256": case_record["prompt_sha256"],
+                        "run_number": run_number,
+                        "started_at": started.isoformat(),
+                        "finished_at": finished.isoformat(),
+                        "status": "error",
+                        "error": {
+                            "type": type(error).__name__,
+                            "message": str(error),
+                        },
+                    }
+                else:
+                    finished = datetime.now(timezone.utc)
+                    output = {
+                        "case_id": case["id"],
+                        "case_name": case["name"],
+                        "dataset": case["dataset"],
+                        "dataset_sha256": result["dataset_sha256"],
+                        "model": result["model"],
+                        "prompt_sha256": result["prompt_sha256"],
+                        "run_number": run_number,
+                        "started_at": started.isoformat(),
+                        "finished_at": finished.isoformat(),
+                        "status": "success",
+                        "raw_model_output": result["raw_output"],
+                        "parsed_result": result["analysis"],
+                    }
+
+                write_json(output_file, output)
+                relative_output = str(output_file.relative_to(ROOT))
+                case_record["runs"].append(
+                    {"path": relative_output, "status": output["status"]}
+                )
+                print(
+                    f"{case['id']} run {run_number}: {output['status']} — saved {relative_output}"
+                )
+
+            suite_manifest["cases"].append(case_record)
+    finally:
+        suite_manifest["finished_at"] = datetime.now(timezone.utc).isoformat()
+        manifest_path = suite_dir / "manifest.json"
+        write_json(manifest_path, suite_manifest)
+        print(f"\nSuite manifest: {manifest_path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
