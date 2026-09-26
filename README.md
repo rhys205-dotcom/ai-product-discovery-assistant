@@ -38,9 +38,9 @@ Its purpose is to demonstrate the review/governance interaction: inspecting evid
 
 ### Local LLM prototype
 
-The local Streamlit application sends the supplied feedback to a configurable OpenAI model and returns structured JSON for review. Use synthetic or otherwise authorised data only.
+The local Streamlit application sends the supplied feedback to Gemini using the Google Gen AI SDK and returns schema-constrained JSON for application-side validation and review. Use synthetic or otherwise authorised data only.
 
-The local workflow now fingerprints the active dataset and binds findings and reviewer state to the analysis run that produced them. Changing dataset or starting a new analysis invalidates stale findings/review controls rather than allowing evidence to be silently reattached.
+The local workflow fingerprints the active dataset and binds findings and reviewer state to the analysis run that produced them. Changing dataset or starting a new analysis invalidates stale findings/review controls rather than allowing evidence to be silently reattached.
 
 ## Run locally
 
@@ -56,8 +56,8 @@ The local workflow now fingerprints the active dataset and binds findings and re
    python -m unittest discover -s evaluation -p "test_*.py"
    ```
 
-3. Set `OPENAI_API_KEY` in your environment.
-4. Optionally set `OPENAI_MODEL` to override the configured default.
+3. Set `GEMINI_API_KEY` in your environment.
+4. Optionally set `GEMINI_MODEL` to override the configured default (`gemini-3.5-flash`).
 5. Start the application:
 
    ```bash
@@ -90,8 +90,8 @@ The reasoning behind these choices is recorded in the [AI decision log](docs/ai-
 
 - Python
 - Streamlit review interface
-- OpenAI Responses API
-- Structured JSON output with application-side contract validation
+- Google Gen AI SDK / Gemini Interactions API
+- Schema-constrained JSON plus application-side contract validation
 - CSV input with identifier validation
 - SHA-256 dataset identity
 - Synthetic 40-record sample dataset
@@ -112,14 +112,14 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. Retri
 - Structured model-response validation
 - Failed-attempt handling that clears older analysis first
 - Preservation of raw/original model output separately from reviewer edits
-- Dataset/run/model/prompt provenance in review exports
+- Dataset/run/provider/model/prompt provenance in review exports
 - Human review decisions and notes
 - Editable interpretation
 - Public static review workflow
 - Human-created reference baseline for the 40-record dataset
 - Relationship-aware scorer v2 with explicit unmatched-finding and duplicate-mapping checks
 - Regression tests for scorer and trust-foundation failure modes
-- Secure Gemini benchmark runner limited to three controlled calls
+- Secure historical Gemini benchmark runner limited to three controlled calls
 - Three independently generated, human-mapped and scored historical benchmark runs
 - Red-team runner that retains failed calls/invalid responses as explicit outcomes
 
@@ -135,15 +135,15 @@ See the [full results and limitations](evaluation/results.md).
 
 A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
 
-The deterministic trust failures were recorded before repair in [`evaluation/red-team/trust-baseline.md`](evaluation/red-team/trust-baseline.md). The repair implementation is now in place; local regression and Streamlit smoke verification are the remaining check before the behavioural baseline.
+The deterministic trust failures were recorded before repair in [`evaluation/red-team/trust-baseline.md`](evaluation/red-team/trust-baseline.md). The repair implementation is now in place. The regression suite and E14 malformed-ID smoke test have passed; E15 stale-state/export smoke verification remains before Step 2 is closed.
 
 It also highlighted a larger gap: the practical product hypothesis — whether practitioners reach a useful, defensible analysis faster — has not yet been tested.
 
 ### Not yet validated
 
 - Whether the human reference theme boundaries are shared by another independent practitioner
-- Local smoke verification of the repaired E14/E15 trust cases
-- Behaviour across the compact model red-team cases using the current application configuration
+- Final E15 stale-state/export smoke verification
+- Behaviour across the compact model red-team cases using the current Gemini application configuration
 - Whether targeted changes improve high-severity model failures without causing regressions
 - Whether practitioners gain a useful time or quality advantage
 - Whether behaviour generalises to a fresh holdout dataset
@@ -155,14 +155,14 @@ Those gaps drive the [revised roadmap](backlog.md); they are not presented as co
 
 The [evaluation workspace](evaluation/README.md) contains the contestable human reference, scorer v2, scorer regression tests, trust-foundation tests, independent-review instructions, generated model outputs and historical benchmark artefacts.
 
-Future before/after product experiments will use one application configuration and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence rather than being treated as directly comparable with the OpenAI-backed application.
+Future before/after product experiments will use the **current Gemini-backed application request path and configuration** and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence because it used a different benchmark runner/request path and should not be treated as a clean before/after baseline merely because the provider/model family overlaps.
 
 The deterministic trust baseline is recorded separately from the repaired implementation. The next model-evaluation phase is the existing compact behavioural suite; a larger automated eval platform remains out of scope.
 
 ## Repository structure
 
 - `app.py` — Streamlit review interface
-- `src/analyse_feedback.py` — prompt construction, feedback validation and model-response validation
+- `src/analyse_feedback.py` — prompt construction, feedback validation, Gemini call and model-response validation
 - `src/review_integrity.py` — dataset/run binding and provenance-preserving export helpers
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
@@ -178,11 +178,11 @@ The deterministic trust baseline is recorded separately from the repaired implem
 
 Scorer blind spots have been fixed and documented, the human reference is explicitly contestable, and the independent reference review is now a trailing activity rather than a development gate.
 
-**Step 2 — Trust-repair implementation complete; local verification next**
+**Step 2 — Trust-repair implementation complete; final local verification in progress**
 
-The pre-fix failures are recorded. Identifier validation, dataset/run binding, stale-state invalidation, structured response validation, failure-state handling and provenance-preserving exports are implemented with regression coverage.
+The pre-fix failures are recorded. Identifier validation, dataset/run binding, stale-state invalidation, structured response validation, failure-state handling and provenance-preserving exports are implemented with regression coverage. The regression suite and E14 smoke test have passed; E15 and one export inspection remain.
 
-After a short local regression/E14/E15 smoke check, the next roadmap activity is **Step 3 — run the compact behavioural baseline** on the current OpenAI-backed application configuration.
+After that short verification, the next roadmap activity is **Step 3 — run the compact behavioural baseline** on the current Gemini-backed application configuration.
 
 Practitioner validation remains in the bounded improvement cycle after the behavioural baseline.
 
