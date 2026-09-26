@@ -78,33 +78,51 @@ Make sure the project can state precisely what existing results do and do not es
 
 This review remains valuable, but it is no longer a gate for continuing the development roadmap. Until it is completed, the current human reference remains explicitly provisional and contestable.
 
-### Completion condition
-
-The mechanical evaluation foundation is repaired and the limits of the published benchmark are explicit. Independent reference review remains an evidence-strengthening activity that can be completed alongside later work.
-
-## Step 2 — Capture and fix trust failures — NOW
+## Step 2 — Capture and fix trust failures — IMPLEMENTATION COMPLETE; SMOKE TEST NEXT
 
 ### Objective
 
 Protect the core product promise: evidence must not become detached from the dataset or reviewer decision that produced it.
 
-### Work
+### Baseline captured before repair
 
-Record the current failures first, then fix them promptly. Completing every model red-team case is not a prerequisite.
+The pre-fix deterministic failures are recorded in `evaluation/red-team/trust-baseline.md` against repository state `8b79640848fcfbf4adcbbfae555649dfb903935c`.
 
-- Reject blank and duplicate feedback IDs before analysis.
-- Bind dataset identity, model analysis and review state together.
-- Invalidate stale findings and review decisions when the dataset or analysis changes.
-- Add basic structured-response validation so malformed or incomplete model output cannot appear as a valid analysis.
-- Preserve original model output separately from reviewer edits.
-- Include dataset/run provenance in reviewed exports.
-- Ensure failed model calls and invalid responses are recorded as outcomes rather than silently leaving stale state.
+### Implemented
+
+- [x] Reject blank and duplicate feedback IDs before analysis.
+- [x] Normalise identifiers before uniqueness checks so whitespace cannot create ambiguous duplicate IDs.
+- [x] Fingerprint the active dataset and bind analysis provenance to that identity.
+- [x] Bind reviewer widget state to a unique analysis run ID.
+- [x] Invalidate stale findings and review decisions when the dataset changes.
+- [x] Clear earlier findings and reviewer state before every new analysis attempt, including failed attempts.
+- [x] Add a second dataset-provenance check before findings can be rendered.
+- [x] Add structured-response validation for required finding fields, evidence lists and evidence-strength values.
+- [x] Preserve raw model text and the original parsed analysis separately from reviewer edits.
+- [x] Include dataset hash/source, run ID, model, prompt hash and timestamps in reviewed exports.
+- [x] Record and display failed analysis attempts instead of silently retaining earlier successful output.
+- [x] Harden the red-team runner so failed calls and invalid responses are saved as explicit results and the suite manifest still completes.
+- [x] Add deterministic regression tests for feedback validation, response validation, dataset binding, review-state invalidation and export provenance.
+
+### Verification still required
+
+- [ ] Run the local regression suite:
+
+  ```bash
+  python -m unittest discover -s evaluation -p "test_*.py"
+  ```
+
+- [ ] Run the E14 upload smoke test and confirm malformed IDs are blocked before analysis.
+- [ ] Run the E15 dataset-switch smoke test and confirm findings/reviewer state do not carry across datasets or analysis runs.
+- [ ] Inspect one exported review and confirm original output, reviewed output and provenance remain distinct.
+
+These are verification tasks, not further feature work.
 
 ### Completion condition
 
-Findings and human decisions cannot silently acquire the wrong source evidence, and exported review artefacts preserve where the analysis came from and what the reviewer changed.
+Findings and human decisions cannot silently acquire the wrong source evidence, and reviewed exports preserve where the analysis came from and what the reviewer changed. The repair implementation is in place; the remaining gate is a short local smoke/regression check.
 
-## Step 3 — Run the compact behavioural baseline
+## Step 3 — Run the compact behavioural baseline — NEXT AFTER SMOKE TEST
 
 ### Objective
 
@@ -116,11 +134,13 @@ Use the existing red-team suite to establish how the current application behaves
 - E06 has been sharpened to test genuinely opposing preferences about the same automated action.
 - E09 has been rewritten so narrow representation is not confounded with exact duplicate wording.
 - E12 is defined as an **isolated signal requiring investigation**, not a recurring theme.
+- Failed model calls and invalid outputs are now retained as explicit run outcomes.
+- Raw model text and validated parsed output are stored separately by the red-team runner.
 
 ### Remaining work
 
-- Add simple checks for malformed responses, failed calls and export integrity.
-- Make acceptance criteria concrete for each case: what must be present, what must not happen, acceptable variation and supporting evidence.
+- Make acceptance criteria concrete for each model case: what must be present, what must not happen, acceptable variation and supporting evidence.
+- Run the model cases on the current OpenAI-backed application configuration.
 - Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
 - Repeat important model cases, including apparent passes, before drawing stronger conclusions.
 
