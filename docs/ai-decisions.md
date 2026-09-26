@@ -155,7 +155,7 @@ Prompt changes can alter output quality, evidence selection, structure, hallucin
 
 ### Evidence
 
-The first controlled Gemini benchmark measured 100% citation validity, 95.5% mean evidence precision, 88.5% mean reference evidence coverage and 66.7% mean theme coverage. All three runs omitted the smaller payment communication and audit-history reference theme.
+The first controlled Gemini benchmark measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage under the original scorer. All three runs omitted the smaller payment communication and audit-history reference distinction.
 
 A later review highlighted that the reference itself is a documented human judgement. Some records assigned to the third theme also plausibly support the broader payment-status problem.
 
@@ -180,23 +180,26 @@ Optimising directly against a known synthetic reference risks overfitting and ca
 
 ### Evidence
 
-Review of the current scorer found that unmatched generated findings can escape headline scoring, citations attached to unknown themes can escape main citation checks, duplicate mappings can overwrite one another and aggregated unique citation counts can hide incorrect use of an ID in one finding when it is correct elsewhere.
+Review of the original scorer found that unmatched generated findings could escape headline scoring, citations attached to unknown themes could escape main citation checks, duplicate mappings could overwrite one another and aggregated unique citation counts could hide incorrect use of an ID in one finding when it was correct elsewhere.
 
 The existing published benchmark numbers still reproduce for the saved runs; these limitations narrow what the numbers establish rather than invalidating the historical experiment.
 
 ### Decision
 
-Before making stronger quantitative claims:
+The evaluation foundation now uses **scorer v2**:
 
-- inspect citations across all generated findings;
-- evaluate relevance per finding–citation relationship;
-- explicitly surface unmatched findings for human review;
-- prevent duplicate mappings from silently overwriting one another;
-- keep the human reference contestable rather than treating unmatched findings as automatically wrong.
+- citations are checked across every generated finding;
+- relevance is scored per finding–citation relationship;
+- unmatched findings are explicitly surfaced for human review;
+- duplicate theme mappings are retained and flagged rather than overwritten;
+- qualification precision penalises irrelevant qualifying/contradictory additions;
+- regression tests cover the scorer blind spots identified during red-team review.
+
+The human reference remains contestable rather than making unmatched findings automatically wrong.
 
 ### Why
 
-A metric should not become a product target until its blind spots are understood.
+A metric should not become a product target until its blind spots are understood. Repairing mechanical scoring errors improves transparency without pretending semantic judgement can be automated away.
 
 ---
 
@@ -364,10 +367,10 @@ Add complexity only where measured product evidence justifies it.
 | Structured outputs | Preferred and must be validated | Validation improvement planned |
 | RAG / embeddings | Not presently justified | Deferred |
 | Historical Gemini benchmark | Useful but separately labelled | Completed v0.4 |
-| Human reference | Repeatable but contestable | Independent review planned |
-| Evaluation scorer | Useful with known blind spots | Repair now |
+| Human reference | Repeatable but contestable | Blind review pack ready; independent review pending |
+| Evaluation scorer | Relationship-aware scorer v2 | Implemented and regression-tested |
 | Red-team suite | Compact diagnostic baseline | Built; refinement/runs pending |
-| Trust failures | Record then fix promptly | Current priority |
+| Trust failures | Record then fix promptly | Next roadmap step |
 | Prompt v2 | One intervention in bounded improvement cycle | Later, after baseline/reference review |
 | Practitioner validation | Test practical usefulness during improvement cycle | Moved forward |
 | Fresh holdout | Use after improvement cycle | Planned |
