@@ -96,22 +96,23 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. Retri
 - Editable interpretation
 - Review export
 - Public static review workflow
-- Human-created reference analysis for the 40-record dataset
-- Transparent scoring for theme coverage, citation validity, evidence relevance and contradiction coverage
+- Human-created reference baseline for the 40-record dataset
+- Relationship-aware scorer v2 with explicit unmatched-finding and duplicate-mapping checks
+- Regression tests for the scorer blind spots identified during red-team review
 - Secure Gemini benchmark runner limited to three controlled calls
 - Three independently generated, human-mapped and scored historical benchmark runs
 
 ### Historical benchmark finding
 
-Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently found the two dominant reference themes but omitted the smaller communication and audit-history reference theme in every run, producing mean theme coverage of 66.7%.
+Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently represented the two dominant reference distinctions but omitted the smaller communication and audit-history reference distinction in every run, producing mean theme coverage of 66.7%.
 
-Those numbers reproduce for the stored runs, but they establish only what the scorer measures. The human reference is a documented judgement rather than objective ground truth, and the original scorer has blind spots around unmatched findings and some citation relationships. The benchmark therefore remains useful historical evidence, not a universal measure of analysis quality.
+Those runs remain useful historical evidence. Scorer v2 now makes the limits more explicit: it scores evidence at the finding–citation relationship level, checks citations from unmatched findings and prevents duplicate mappings from disappearing. The human reference itself remains contestable, and an independent blind practitioner review is still pending.
 
 See the [full results and limitations](evaluation/results.md).
 
 ### Broader review finding
 
-A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, unmatched hallucinated findings escaping headline metrics, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
+A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
 
 It also highlighted a larger gap: the practical product hypothesis — whether practitioners reach a useful, defensible analysis faster — has not yet been tested.
 
@@ -128,11 +129,11 @@ Those gaps drive the [revised roadmap](backlog.md); they are not presented as co
 
 ## Evaluation
 
-The [evaluation workspace](evaluation/README.md) contains the human reference, inspectable scoring rules, generated model outputs with explicit human annotations and per-run scores.
+The [evaluation workspace](evaluation/README.md) contains the contestable human reference, scorer v2, scorer regression tests, independent-review instructions, generated model outputs and historical benchmark artefacts.
 
 Future before/after product experiments will use one application configuration and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence rather than being treated as directly comparable with the OpenAI-backed application.
 
-The next evaluation phase is deliberately proportionate: repair the evaluation foundation, capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. A larger automated eval platform is out of scope.
+The next evaluation phase is deliberately proportionate: complete the independent reference review, capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. A larger automated eval platform is out of scope.
 
 ## Repository structure
 
@@ -140,7 +141,7 @@ The next evaluation phase is deliberately proportionate: repair the evaluation f
 - `src/analyse_feedback.py` — prompt construction and LLM analysis
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — reference, benchmark, red-team cases and scoring artefacts
+- `evaluation/` — reference, benchmark, scorer v2, blind-review pack and red-team cases
 - `examples/` — example outputs
 - `backlog.md` — current experiments and revised roadmap
 
@@ -148,11 +149,13 @@ The next evaluation phase is deliberately proportionate: repair the evaluation f
 
 **v0.4 — First controlled benchmark completed**
 
-**Current focus — repair evaluation and trust foundations**
+**Step 1 — Evaluation foundation mostly repaired**
 
-The next work is to challenge the reference with an independent practitioner, correct scorer blind spots, capture and repair evidence-identity/state failures, and then run the compact behavioural baseline. Prompt `v2` remains a potential intervention during the bounded improvement cycle rather than the immediate goal.
+The scorer blind spots have been fixed and documented, the human reference is explicitly marked as contestable, the historical benchmark has been reinterpreted under scorer v2, and a blind practitioner-review pack is ready.
 
-Practitioner validation has been moved forward: the project should test whether the workflow improves the user's task before investing in substantially more evaluation machinery.
+The remaining Step 1 dependency is one independent PM/PO/BA review of the 40-record dataset without seeing the expected three-theme structure. After that, the project moves to capturing and fixing deterministic evidence-identity and stale-state failures.
+
+Practitioner validation of the product itself remains a later, separate activity in the bounded improvement cycle.
 
 ## About
 
