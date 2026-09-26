@@ -52,16 +52,20 @@ def build_review_export(
     original_analysis,
     raw_model_output,
     reviewed_themes,
+    reviewed_signals=None,
     exported_at=None,
 ):
     """Build a provenance-preserving review export."""
     timestamp = exported_at or datetime.now(timezone.utc).isoformat()
     return {
-        "export_version": "2.0",
+        "export_version": "2.1",
         "provenance": {**copy.deepcopy(metadata), "exported_at": timestamp},
         "original_model_output": {
             "parsed": copy.deepcopy(original_analysis),
             "raw_text": raw_model_output,
         },
-        "reviewed_analysis": {"themes": copy.deepcopy(reviewed_themes)},
+        "reviewed_analysis": {
+            "themes": copy.deepcopy(reviewed_themes),
+            "isolated_signals": copy.deepcopy(reviewed_signals or []),
+        },
     }
