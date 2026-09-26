@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.analyse_feedback import (
+    PROMPT_VERSION,
     analyse_feedback_with_metadata,
     build_prompt,
     dataset_fingerprint,
@@ -70,6 +71,7 @@ def main():
         "started_at": datetime.now(timezone.utc).isoformat(),
         "provider": "Google",
         "model": model,
+        "prompt_version": PROMPT_VERSION,
         "runs_per_case": args.runs,
         "baseline_note": "Current Gemini-backed application analysis contract; failures and invalid outputs are retained as results.",
         "cases": [],
@@ -89,6 +91,7 @@ def main():
                 "planned_severity": case["severity"],
                 "expected": case["expected"],
                 "record_count": len(feedback),
+                "prompt_version": PROMPT_VERSION,
                 "prompt_sha256": prompt_hash(feedback),
                 "runs": [],
             }
@@ -108,6 +111,7 @@ def main():
                         "dataset_sha256": case_record["dataset_sha256"],
                         "provider": "Google",
                         "model": model,
+                        "prompt_version": PROMPT_VERSION,
                         "prompt_sha256": case_record["prompt_sha256"],
                         "run_number": run_number,
                         "started_at": started.isoformat(),
@@ -127,7 +131,9 @@ def main():
                         "dataset_sha256": result["dataset_sha256"],
                         "provider": result["provider"],
                         "model": result["model"],
+                        "prompt_version": result["prompt_version"],
                         "prompt_sha256": result["prompt_sha256"],
+                        "duplicate_evidence_groups": result["duplicate_evidence_groups"],
                         "run_number": run_number,
                         "started_at": started.isoformat(),
                         "finished_at": finished.isoformat(),
