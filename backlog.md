@@ -51,7 +51,7 @@ This changed the sequence of work. The project repairs the evaluation and trust 
 
 # Revised roadmap
 
-## Step 1 — Repair the evaluation foundation — IN PROGRESS
+## Step 1 — Repair the evaluation foundation — COMPLETE FOR CORE DEVELOPMENT
 
 ### Objective
 
@@ -60,7 +60,7 @@ Make sure the project can state precisely what existing results do and do not es
 ### Completed in Step 1
 
 - [x] Treat the human reference as a contestable judgement, not ground truth.
-- [x] Mark the existing three-theme reference as provisional pending independent review rather than silently treating it as canonical.
+- [x] Mark the existing three-theme reference as provisional rather than silently treating it as canonical.
 - [x] Add a blind review pack for an independent PM/PO/BA who has not seen the expected theme structure.
 - [x] Replace the original scorer with **scorer v2**, which keeps unmatched findings and their citations visible.
 - [x] Score citation relevance at the finding–citation relationship level rather than only through aggregated unique IDs.
@@ -71,16 +71,18 @@ Make sure the project can state precisely what existing results do and do not es
 - [x] Choose the current OpenAI-backed application configuration as the baseline for future prompt comparisons; retain the Gemini benchmark as a separately labelled historical experiment.
 - [x] Align repository wording so illustrative public-demo output is distinguished from measured benchmark output.
 
-### Remaining dependency
+### Trailing activity — non-blocking
 
 - [ ] Complete one independent blind practitioner review of the 40-record dataset using `evaluation/independent-reference-review.md`.
-- [ ] Record the comparison with reference v1.0 and decide whether to retain it, version it, or keep multiple plausible analyses.
+- [ ] Record the comparison with reference v1.0 and decide whether to retain it, version it, or document multiple plausible analyses.
+
+This review remains valuable, but it is no longer a gate for continuing the development roadmap. Until it is completed, the current human reference remains explicitly provisional and contestable.
 
 ### Completion condition
 
-The project can explain exactly what each published metric measures, what it misses and why the human reference is useful without presenting it as objective truth. Mechanically this is now in place; the remaining dependency is the independent review.
+The mechanical evaluation foundation is repaired and the limits of the published benchmark are explicit. Independent reference review remains an evidence-strengthening activity that can be completed alongside later work.
 
-## Step 2 — Capture and fix trust failures — NEXT
+## Step 2 — Capture and fix trust failures — NOW
 
 ### Objective
 
@@ -181,6 +183,13 @@ Close the learning loop and turn the work into a concise product case study.
 ### Completion condition
 
 The portfolio claims match the evidence, remaining weaknesses are visible, and any further work has a clear product reason.
+
+## Trailing activities
+
+These are useful evidence-strengthening activities but should not block core development unless a result materially challenges the product direction:
+
+- independent blind review of the original 40-record reference analysis;
+- comparison of that review with reference v1.0 and documentation of disagreement.
 
 ## Evaluation principles from this point
 
