@@ -34,8 +34,8 @@ This backlog records the next experiments for the AI Product Discovery Assistant
 - Recorded the provider, model, prompt hash, prompt version and timestamps.
 - Human-mapped every generated theme to the documented reference before scoring.
 - Reported every run rather than selecting a preferred result.
-- Measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage.
-- Identified a repeatable result: all three runs omitted the smaller payment communication and audit-history reference theme.
+- Measured 100% citation validity, 95.5% mean evidence precision and 66.7% mean theme coverage under the original scorer.
+- Identified a repeatable result: all three runs omitted the smaller payment communication and audit-history reference distinction.
 - Kept retrieval infrastructure deferred because all 40 records are supplied directly to the model and no measured retrieval problem currently justifies RAG.
 
 ## Completed — broader red-team review
@@ -47,31 +47,40 @@ A broader product review found that the first benchmark is useful but too narrow
 
 The review also exposed concrete trust and evaluation risks, including duplicate/blank IDs, stale analysis after a dataset change, scorer blind spots around unmatched findings, narrow evidence being presented too strongly, unsupported embellishment, prompt injection, false contradiction and over-merging/over-fragmentation.
 
-This changes the sequence of work. The project will repair the evaluation and trust foundation first, then run a compact behavioural baseline and practitioner validation before investing in more evaluation depth.
+This changed the sequence of work. The project repairs the evaluation and trust foundation first, then runs a compact behavioural baseline and practitioner validation before investing in more evaluation depth.
 
 # Revised roadmap
 
-## Step 1 — Repair the evaluation foundation — NOW
+## Step 1 — Repair the evaluation foundation — IN PROGRESS
 
 ### Objective
 
 Make sure the project can state precisely what existing results do and do not establish.
 
-### Work
+### Completed in Step 1
 
-- Review the three-theme human reference with at least one independent product practitioner who has not seen the expected theme structure.
-- Treat the human reference as a contestable judgement, not ground truth.
-- Fix scorer blind spots so unmatched findings and their citations cannot disappear from headline checks.
-- Score citation relevance at the finding–citation relationship level rather than only through aggregated unique IDs.
-- Ensure additional or duplicate theme mappings cannot silently escape evaluation.
-- Choose the current application configuration as the baseline for future prompt comparisons; retain the historical Gemini benchmark as a separately labelled experiment.
-- Align public-demo and repository wording so illustrative sample output is clearly distinguished from measured benchmark output.
+- [x] Treat the human reference as a contestable judgement, not ground truth.
+- [x] Mark the existing three-theme reference as provisional pending independent review rather than silently treating it as canonical.
+- [x] Add a blind review pack for an independent PM/PO/BA who has not seen the expected theme structure.
+- [x] Replace the original scorer with **scorer v2**, which keeps unmatched findings and their citations visible.
+- [x] Score citation relevance at the finding–citation relationship level rather than only through aggregated unique IDs.
+- [x] Preserve and flag duplicate theme mappings rather than allowing one finding to overwrite another.
+- [x] Add qualification precision so irrelevant contradictory/qualifying records reduce the score instead of being ignored.
+- [x] Add regression tests for the scorer failure modes discovered during red-team review.
+- [x] Reinterpret the historical Gemini benchmark under the repaired scorer while preserving the original published v1 metrics.
+- [x] Choose the current OpenAI-backed application configuration as the baseline for future prompt comparisons; retain the Gemini benchmark as a separately labelled historical experiment.
+- [x] Align repository wording so illustrative public-demo output is distinguished from measured benchmark output.
+
+### Remaining dependency
+
+- [ ] Complete one independent blind practitioner review of the 40-record dataset using `evaluation/independent-reference-review.md`.
+- [ ] Record the comparison with reference v1.0 and decide whether to retain it, version it, or keep multiple plausible analyses.
 
 ### Completion condition
 
-The project can explain exactly what each published metric measures, what it misses and why the human reference is useful without presenting it as objective truth.
+The project can explain exactly what each published metric measures, what it misses and why the human reference is useful without presenting it as objective truth. Mechanically this is now in place; the remaining dependency is the independent review.
 
-## Step 2 — Capture and fix trust failures
+## Step 2 — Capture and fix trust failures — NEXT
 
 ### Objective
 
@@ -99,12 +108,15 @@ Findings and human decisions cannot silently acquire the wrong source evidence, 
 
 Use the existing red-team suite to establish how the current application behaves across meaningful failure modes without turning the project into an eval platform.
 
-### Work
+### Prepared work
 
-- Keep the approximately 15-case suite because the datasets and runner already exist.
-- Sharpen E06 so it tests genuinely opposing preferences about the same automated action.
-- Rewrite E09 so narrow representation is not confounded with exact duplicate wording.
-- Define E12 as an **isolated signal requiring investigation**, not a recurring theme.
+- The approximately 15-case suite already exists.
+- E06 has been sharpened to test genuinely opposing preferences about the same automated action.
+- E09 has been rewritten so narrow representation is not confounded with exact duplicate wording.
+- E12 is defined as an **isolated signal requiring investigation**, not a recurring theme.
+
+### Remaining work
+
 - Add simple checks for malformed responses, failed calls and export integrity.
 - Make acceptance criteria concrete for each case: what must be present, what must not happen, acceptable variation and supporting evidence.
 - Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
