@@ -68,7 +68,7 @@ Make sure the project can state precisely what existing results do and do not es
 - [x] Add qualification precision so irrelevant contradictory/qualifying records reduce the score instead of being ignored.
 - [x] Add regression tests for the scorer failure modes discovered during red-team review.
 - [x] Reinterpret the historical Gemini benchmark under the repaired scorer while preserving the original published v1 metrics.
-- [x] Choose the current OpenAI-backed application configuration as the baseline for future prompt comparisons; retain the Gemini benchmark as a separately labelled historical experiment.
+- [x] Choose the current Gemini-backed application request path/configuration as the baseline for future prompt comparisons; retain the earlier Gemini benchmark as a separately labelled historical experiment because it used a different benchmark runner/request configuration.
 - [x] Align repository wording so illustrative public-demo output is distinguished from measured benchmark output.
 
 ### Trailing activity — non-blocking
@@ -78,7 +78,7 @@ Make sure the project can state precisely what existing results do and do not es
 
 This review remains valuable, but it is no longer a gate for continuing the development roadmap. Until it is completed, the current human reference remains explicitly provisional and contestable.
 
-## Step 2 — Capture and fix trust failures — IMPLEMENTATION COMPLETE; SMOKE TEST NEXT
+## Step 2 — Capture and fix trust failures — IMPLEMENTATION COMPLETE; FINAL SMOKE TEST IN PROGRESS
 
 ### Objective
 
@@ -99,28 +99,26 @@ The pre-fix deterministic failures are recorded in `evaluation/red-team/trust-ba
 - [x] Add a second dataset-provenance check before findings can be rendered.
 - [x] Add structured-response validation for required finding fields, evidence lists and evidence-strength values.
 - [x] Preserve raw model text and the original parsed analysis separately from reviewer edits.
-- [x] Include dataset hash/source, run ID, model, prompt hash and timestamps in reviewed exports.
+- [x] Include dataset hash/source, run ID, provider, model, prompt hash and timestamps in reviewed exports.
 - [x] Record and display failed analysis attempts instead of silently retaining earlier successful output.
 - [x] Harden the red-team runner so failed calls and invalid responses are saved as explicit results and the suite manifest still completes.
 - [x] Add deterministic regression tests for feedback validation, response validation, dataset binding, review-state invalidation and export provenance.
+- [x] Use the existing `GEMINI_API_KEY`/Google Gen AI SDK for the working application baseline rather than adding an unnecessary second provider dependency.
 
-### Verification still required
+### Verification
 
-- [ ] Run the local regression suite:
-
-  ```bash
-  python -m unittest discover -s evaluation -p "test_*.py"
-  ```
-
-- [ ] Run the E14 upload smoke test and confirm malformed IDs are blocked before analysis.
-- [ ] Run the E15 dataset-switch smoke test and confirm findings/reviewer state do not carry across datasets or analysis runs.
+- [x] Local regression suite passed: **22 tests, OK**.
+- [x] E14 upload smoke test passed: duplicate IDs were rejected before analysis.
+- [x] Failed model-attempt handling was observed to clear/retain no previous findings when the missing-provider-key call failed.
+- [ ] Re-run the regression suite after the Gemini application switch.
+- [ ] Run the E15 dataset-switch smoke test with Gemini and confirm findings/reviewer state do not carry across datasets or analysis runs.
 - [ ] Inspect one exported review and confirm original output, reviewed output and provenance remain distinct.
 
 These are verification tasks, not further feature work.
 
 ### Completion condition
 
-Findings and human decisions cannot silently acquire the wrong source evidence, and reviewed exports preserve where the analysis came from and what the reviewer changed. The repair implementation is in place; the remaining gate is a short local smoke/regression check.
+Findings and human decisions cannot silently acquire the wrong source evidence, and reviewed exports preserve where the analysis came from and what the reviewer changed. The repair implementation is in place; the remaining gate is the short E15/export verification after the provider alignment.
 
 ## Step 3 — Run the compact behavioural baseline — NEXT AFTER SMOKE TEST
 
@@ -137,10 +135,11 @@ Use the existing red-team suite to establish how the current application behaves
 - [x] Failed model calls and invalid outputs are retained as explicit run outcomes.
 - [x] Raw model text and validated parsed output are stored separately by the red-team runner.
 - [x] Concrete pre-run acceptance criteria are documented in `evaluation/red-team/acceptance-criteria.md`, including what must be present, prohibited behaviour, acceptable variation and evidence to inspect.
+- [x] The runner is aligned to the current Gemini-backed application configuration.
 
 ### Remaining work
 
-- [ ] Run the model cases on the current OpenAI-backed application configuration.
+- [ ] Run the model cases on the current Gemini-backed application configuration.
 - [ ] Keep Pass / Partial / Fail, observed severity and written reasoning. Do not rely on one overall percentage.
 - [ ] Repeat important model cases, including apparent passes, before drawing stronger conclusions.
 
@@ -213,7 +212,7 @@ These are useful evidence-strengthening activities but should not block core dev
 
 ## Evaluation principles from this point
 
-- The current OpenAI-backed application configuration is the baseline for future before/after experiments; the Gemini benchmark remains historical evidence rather than a directly comparable baseline.
+- The current Gemini-backed application request path/configuration is the baseline for future before/after experiments. The earlier Gemini benchmark remains historical evidence because it used a different benchmark runner/request configuration; same provider/model family does not make the experiments directly comparable.
 - The human reference is useful for repeatability but remains contestable.
 - Theme count is not a quality target: useful distinctions may be top-level themes or subthemes depending on the product decision they support.
 - RAG remains deferred because retrieval infrastructure is not presently justified; this is not a claim that retrieval has been proven reliable.
