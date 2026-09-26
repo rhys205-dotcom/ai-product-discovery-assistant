@@ -1,12 +1,16 @@
 # Evaluation results
 
-## Gemini benchmark — 20 September 2026
+## Historical Gemini benchmark — 20 September 2026
 
 Three independent analyses were run against the unchanged 40-record synthetic feedback dataset using `gemini-3.5-flash`, prompt version `v1`.
 
 Each generated theme was manually mapped to the documented human reference before scoring. The stored run files contain the generated findings plus the added `theme_id` annotation used for scoring. All three runs are reported; no run was excluded or selected as the preferred result.
 
-## Results
+This experiment predates the current OpenAI-backed application configuration. It is retained as historical evidence rather than used as the direct baseline for future prompt comparisons.
+
+## Original published scores — scorer v1
+
+These numbers are preserved because they were the scores published at the time of the experiment.
 
 | Metric | Run 1 | Run 2 | Run 3 | Mean |
 |---|---:|---:|---:|---:|
@@ -16,56 +20,85 @@ Each generated theme was manually mapped to the documented human reference befor
 | Citation validity | 100% | 100% | 100% | 100% |
 | Contradiction coverage | 83.3% | 83.3% | 100% | 88.9% |
 
-## What the benchmark shows
+Those figures reproduce for the stored runs under scorer v1. They are not withdrawn, but later review identified mechanical blind spots in what the scorer counted.
 
-The model consistently identified:
+## Relationship-aware re-score — scorer v2
+
+Scorer v2 evaluates evidence at the `(finding, citation)` relationship level, keeps unmatched findings visible, checks citations from every generated finding, preserves duplicate mappings rather than overwriting them, and adds qualification precision.
+
+Using the same stored human mappings, the v2 re-score is:
+
+| Metric | Run 1 | Run 2 | Run 3 | Mean |
+|---|---:|---:|---:|---:|
+| Theme coverage | 66.7% | 66.7% | 66.7% | 66.7% |
+| Evidence precision | 96.4% | 93.5% | 96.7% | 95.5% |
+| Reference evidence coverage | 77.1% | 82.9% | 82.9% | 81.0% |
+| Citation validity | 100% | 100% | 100% | 100% |
+| Qualification coverage | 66.7% | 55.6% | 88.9% | 70.4% |
+| Qualification precision | 85.7% | 83.3% | 88.9% | 86.0% |
+| Unmatched findings | 0 | 0 | 0 | — |
+| Duplicate mapped themes | 0 | 0 | 0 | — |
+
+The lower relationship-aware coverage figures are not evidence that the model changed; the model outputs are identical. The denominator now preserves theme-specific evidence relationships instead of flattening overlapping IDs across reference themes.
+
+## What the benchmark establishes
+
+All three runs represented the two dominant reference distinctions:
 
 - `T01` — manual reconciliation and exception handling;
 - `T02` — delayed visibility of failed or pending payments.
 
-It missed `T03` — payment communication and audit history — in all three runs. Some evidence belonging to `T03`, particularly `F037`, was absorbed into the broader payment-status theme rather than recognised as a distinct customer problem.
+None was mapped to `T03` — payment communication and audit history. Some records associated with that reference distinction, particularly `F037`, were included inside the broader payment-status finding instead.
 
-Across all runs:
+Across the stored runs:
 
 - every cited feedback ID existed in the source dataset;
 - no deliberate distractor was cited as core evidence;
-- both identified themes met the minimum evidence threshold;
-- evidence precision remained above 93%.
+- both represented reference themes met the minimum support threshold;
+- core evidence precision remained above 93%.
 
-## Human-review findings
+## What the benchmark does **not** establish
 
-The model occasionally treated valid records as contradictory when they were not. For example, `F015` was misclassified as contradictory in runs 2 and 3.
+The three-theme reference is a documented human analysis, not objective ground truth. The fact that the model did not produce a separately mapped `T03` finding does **not** by itself prove that a two-theme analysis is worse for a product practitioner.
 
-The contradiction-coverage metric measures whether expected qualifying evidence was found, but does not penalise irrelevant items added to the contradictory-evidence list. This remains a limitation of the current scorer and demonstrates why automated scores still require qualitative review.
+`F013` and `F037` provide relatively direct evidence for communication/history concerns. Other records used in `T03`, including `F008`, `F022` and `F032`, can also plausibly remain inside the broader payment-status problem. An independent blind practitioner review is therefore required before optimising the model specifically to reproduce this theme boundary.
 
-## Scope and limitations
+The benchmark also does not establish general reliability, time saving, usefulness on real customer data, or performance on larger datasets.
 
-Three runs provide an initial repeatability check, not statistically robust evidence of general model performance. The benchmark uses one synthetic dataset, one model and one prompt version.
+## Qualitative findings
 
-The human reference is contestable, and the current scorer does not measure every qualitative error. In particular, contradiction coverage rewards expected qualifying evidence but does not penalise irrelevant additions.
+The model sometimes labelled valid records as contradictory or qualifying when the relationship was weak. For example, `F015` — a manager saying they do not use the finance reports — was included as contradictory evidence in runs 2 and 3.
 
-For future experiments, the unmodified model response should be preserved separately from human mapping and calculated scores.
+Scorer v2 now exposes this through **qualification precision**, rather than rewarding expected qualifying records without penalising irrelevant additions.
 
-## Decision
+## Scorer limitation found after publication
 
-The principal limitation is **theme coverage**, not citation faithfulness or retrieval.
+A later red-team review demonstrated that scorer v1 could ignore an additional unmatched finding and citations attached to it. It could also overwrite multiple findings mapped to the same reference theme and aggregate unique evidence IDs in a way that hid incorrect use of an ID in one theme when the same ID was used correctly elsewhere.
 
-The next experiment should test whether a revised prompt can separate smaller communication and audit-history problems from the dominant operational themes. The existing `v1` results must remain unchanged as the baseline for that comparison.
+Scorer v2 repairs these mechanical blind spots. It still does not determine whether an unmatched finding is semantically wrong; unmatched findings are surfaced for human review because the reference itself may be incomplete.
 
-The results do not currently justify adding embeddings or a RAG architecture. The model already retrieves the relevant records reliably; the issue is how it groups and distinguishes overlapping themes.
+## Current decision
 
-## Reproduce the benchmark
+The historical experiment identifies a **reference-coverage question** worth investigating, but theme count is not a product-quality target.
 
-Generate three controlled runs:
+The next sequence is:
+
+1. independently challenge the human reference;
+2. use the repaired scorer and current OpenAI-backed application configuration for future experiments;
+3. capture and fix deterministic evidence-integrity failures;
+4. run the compact behavioural baseline;
+5. test bounded improvements alongside practitioner validation.
+
+RAG remains deferred because all 40 records are supplied directly to the model and no measured retrieval problem currently justifies retrieval infrastructure. This is not a claim that retrieval has been proven reliable.
+
+## Reproduce the scores
+
+The original v1 score files remain stored with the benchmark artefacts.
+
+To score a stored human-mapped run with scorer v2:
 
 ```bash
-python evaluation/run_gemini_benchmark.py
+python evaluation/evaluate.py evaluation/runs/gemini-20260920T195039Z/run-1.json
 ```
 
-After human theme mapping, score a run with:
-
-```bash
-python evaluation/evaluate.py evaluation/runs/<benchmark-id>/run-1.json
-```
-
-The reference analysis is a documented human judgement rather than objective ground truth. Results should therefore be interpreted as transparent comparative evidence, not as a universal measure of model quality.
+The independent reference-review instructions are in [`independent-reference-review.md`](independent-reference-review.md).
