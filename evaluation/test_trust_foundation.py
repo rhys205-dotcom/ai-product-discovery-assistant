@@ -46,12 +46,12 @@ VALID_ANALYSIS = {
 }
 
 
-class FakeResponse:
+class FakeInteraction:
     def __init__(self, output_text):
         self.output_text = output_text
 
 
-class FakeResponses:
+class FakeInteractions:
     def __init__(self, output_text=None, error=None):
         self.output_text = output_text
         self.error = error
@@ -59,12 +59,12 @@ class FakeResponses:
     def create(self, **kwargs):
         if self.error:
             raise self.error
-        return FakeResponse(self.output_text)
+        return FakeInteraction(self.output_text)
 
 
 class FakeClient:
     def __init__(self, output_text=None, error=None):
-        self.responses = FakeResponses(output_text=output_text, error=error)
+        self.interactions = FakeInteractions(output_text=output_text, error=error)
 
 
 class FeedbackValidationTests(unittest.TestCase):
@@ -125,11 +125,12 @@ class AnalysisMetadataTests(unittest.TestCase):
     def test_preserves_raw_output_and_provenance(self):
         raw = json.dumps(VALID_ANALYSIS)
         client = FakeClient(output_text=raw)
-        with patch.dict("os.environ", {"OPENAI_MODEL": "test-model"}, clear=False):
+        with patch.dict("os.environ", {"GEMINI_MODEL": "test-model"}, clear=False):
             result = analyse_feedback_with_metadata(VALID_FEEDBACK, client=client)
 
         self.assertEqual(result["analysis"], VALID_ANALYSIS)
         self.assertEqual(result["raw_output"], raw)
+        self.assertEqual(result["provider"], "Google")
         self.assertEqual(result["model"], "test-model")
         self.assertEqual(result["record_count"], 2)
         self.assertEqual(result["dataset_sha256"], dataset_fingerprint(VALID_FEEDBACK))
@@ -216,6 +217,7 @@ class ReviewIntegrityTests(unittest.TestCase):
             "run_id": "run-123",
             "dataset_sha256": "dataset-a",
             "dataset_source": "feedback.csv",
+            "provider": "Google",
             "model": "test-model",
         }
         original = json.loads(json.dumps(VALID_ANALYSIS))
@@ -233,6 +235,7 @@ class ReviewIntegrityTests(unittest.TestCase):
 
         self.assertEqual(export["provenance"]["run_id"], "run-123")
         self.assertEqual(export["provenance"]["dataset_sha256"], "dataset-a")
+        self.assertEqual(export["provenance"]["provider"], "Google")
         self.assertEqual(export["provenance"]["exported_at"], "2026-09-26T14:30:00+00:00")
         self.assertEqual(
             export["original_model_output"]["parsed"]["themes"][0]["interpretation"],
