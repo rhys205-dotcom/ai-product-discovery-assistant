@@ -106,7 +106,7 @@ RAG, embeddings and vector storage are deliberately excluded from the MVP. Retri
 
 Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently represented the two dominant reference distinctions but omitted the smaller communication and audit-history reference distinction in every run, producing mean theme coverage of 66.7%.
 
-Those runs remain useful historical evidence. Scorer v2 now makes the limits more explicit: it scores evidence at the finding–citation relationship level, checks citations from unmatched findings and prevents duplicate mappings from disappearing. The human reference itself remains contestable, and an independent blind practitioner review is still pending.
+Those runs remain useful historical evidence. Scorer v2 now makes the limits more explicit: it scores evidence at the finding–citation relationship level, checks citations from unmatched findings and prevents duplicate mappings from disappearing. The human reference itself remains contestable; an independent blind practitioner review is retained as a non-blocking trailing activity.
 
 See the [full results and limitations](evaluation/results.md).
 
@@ -133,7 +133,7 @@ The [evaluation workspace](evaluation/README.md) contains the contestable human 
 
 Future before/after product experiments will use one application configuration and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence rather than being treated as directly comparable with the OpenAI-backed application.
 
-The next evaluation phase is deliberately proportionate: complete the independent reference review, capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. A larger automated eval platform is out of scope.
+The next evaluation phase is deliberately proportionate: capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. The independent reference review can happen alongside this work rather than blocking it. A larger automated eval platform is out of scope.
 
 ## Repository structure
 
@@ -149,11 +149,13 @@ The next evaluation phase is deliberately proportionate: complete the independen
 
 **v0.4 — First controlled benchmark completed**
 
-**Step 1 — Evaluation foundation mostly repaired**
+**Step 1 — Core evaluation foundation repaired**
 
-The scorer blind spots have been fixed and documented, the human reference is explicitly marked as contestable, the historical benchmark has been reinterpreted under scorer v2, and a blind practitioner-review pack is ready.
+The scorer blind spots have been fixed and documented, the human reference is explicitly marked as contestable, the historical benchmark has been reinterpreted under scorer v2, and a blind practitioner-review pack is ready. The independent review remains a trailing activity rather than a development gate.
 
-The remaining Step 1 dependency is one independent PM/PO/BA review of the 40-record dataset without seeing the expected three-theme structure. After that, the project moves to capturing and fixing deterministic evidence-identity and stale-state failures.
+**Step 2 — Capture and fix trust failures — current focus**
+
+The next work is to record and repair deterministic evidence-identity and stale-state failures, strengthen structured-response validation, preserve original-versus-edited output and add dataset/run provenance to exports.
 
 Practitioner validation of the product itself remains a later, separate activity in the bounded improvement cycle.
 
