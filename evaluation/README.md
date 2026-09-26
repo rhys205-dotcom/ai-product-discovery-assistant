@@ -11,7 +11,7 @@ The first controlled Gemini benchmark remains useful historical evidence, but it
 - the **current OpenAI-backed application configuration** as the baseline for future before/after product experiments;
 - the Gemini benchmark as a separately labelled historical experiment.
 
-An independent practitioner review of the three-theme reference is still pending. See [`independent-reference-review.md`](independent-reference-review.md).
+An independent practitioner review of the three-theme reference is still pending. It is now a **trailing, non-blocking evidence-strengthening activity** rather than a gate for continued development. See [`independent-reference-review.md`](independent-reference-review.md).
 
 ## What scorer v2 measures
 
@@ -84,7 +84,7 @@ Known deterministic trust failures such as identifier and stale-state problems s
 
 ## Files
 
-- `reference-analysis.json` — machine-readable human reference baseline; independent review pending.
+- `reference-analysis.json` — machine-readable human reference baseline; independent review pending as a trailing activity.
 - `golden-analysis.md` — readable explanation of the same reference and its contestability.
 - `independent-reference-review.md` — blind review instructions for another PM/PO/BA.
 - `example-run.json` — deterministic fixture; not claimed as model performance.
