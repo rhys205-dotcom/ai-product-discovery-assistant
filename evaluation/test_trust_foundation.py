@@ -8,6 +8,12 @@ from src.analyse_feedback import (
     validate_analysis_result,
     validate_feedback_records,
 )
+from src.review_integrity import (
+    analysis_matches_dataset,
+    bind_dataset,
+    build_review_export,
+    clear_analysis_state,
+)
 
 
 VALID_FEEDBACK = [
@@ -144,6 +150,98 @@ class AnalysisMetadataTests(unittest.TestCase):
         client = FakeClient(error=RuntimeError("provider unavailable"))
         with self.assertRaisesRegex(RuntimeError, "provider unavailable"):
             analyse_feedback_with_metadata(VALID_FEEDBACK, client=client)
+
+
+class ReviewIntegrityTests(unittest.TestCase):
+    def test_dataset_change_clears_analysis_failure_and_review_state(self):
+        state = {
+            "active_dataset_sha256": "dataset-a",
+            "active_dataset_source": "a.csv",
+            "analysis": {"themes": []},
+            "analysis_original": {"themes": []},
+            "analysis_raw_output": "{}",
+            "analysis_metadata": {"dataset_sha256": "dataset-a"},
+            "last_analysis_failure": {"error": "old failure"},
+            "review:run-a:0:decision": "Accept",
+            "decision-0": "Reject",
+            "unrelated": "keep me",
+        }
+
+        changed = bind_dataset(state, "dataset-b", "b.csv")
+
+        self.assertTrue(changed)
+        self.assertEqual(state["active_dataset_sha256"], "dataset-b")
+        self.assertEqual(state["active_dataset_source"], "b.csv")
+        self.assertEqual(state["unrelated"], "keep me")
+        self.assertNotIn("analysis", state)
+        self.assertNotIn("analysis_original", state)
+        self.assertNotIn("analysis_raw_output", state)
+        self.assertNotIn("analysis_metadata", state)
+        self.assertNotIn("last_analysis_failure", state)
+        self.assertNotIn("review:run-a:0:decision", state)
+        self.assertNotIn("decision-0", state)
+
+    def test_same_dataset_keeps_bound_analysis(self):
+        state = {
+            "active_dataset_sha256": "dataset-a",
+            "analysis": {"themes": []},
+            "analysis_metadata": {"dataset_sha256": "dataset-a"},
+        }
+        changed = bind_dataset(state, "dataset-a", "renamed.csv")
+        self.assertFalse(changed)
+        self.assertIn("analysis", state)
+        self.assertEqual(state["active_dataset_source"], "renamed.csv")
+
+    def test_new_analysis_attempt_clears_review_state(self):
+        state = {
+            "analysis": {"themes": []},
+            "review:run-a:0:note": "old note",
+            "note-0": "legacy note",
+            "last_analysis_failure": {"error": "old"},
+        }
+        clear_analysis_state(state)
+        self.assertEqual(state, {})
+
+    def test_analysis_must_match_active_dataset(self):
+        self.assertTrue(
+            analysis_matches_dataset({"dataset_sha256": "dataset-a"}, "dataset-a")
+        )
+        self.assertFalse(
+            analysis_matches_dataset({"dataset_sha256": "dataset-a"}, "dataset-b")
+        )
+        self.assertFalse(analysis_matches_dataset(None, "dataset-a"))
+
+    def test_export_preserves_original_reviewed_output_and_provenance(self):
+        metadata = {
+            "run_id": "run-123",
+            "dataset_sha256": "dataset-a",
+            "dataset_source": "feedback.csv",
+            "model": "test-model",
+        }
+        original = json.loads(json.dumps(VALID_ANALYSIS))
+        reviewed = json.loads(json.dumps(VALID_ANALYSIS["themes"]))
+        reviewed[0]["interpretation"] = "Human-edited interpretation."
+        reviewed[0]["human_review"] = {"decision": "Edit and accept", "note": "Tightened claim."}
+
+        export = build_review_export(
+            metadata,
+            original,
+            json.dumps(original),
+            reviewed,
+            exported_at="2026-09-26T14:30:00+00:00",
+        )
+
+        self.assertEqual(export["provenance"]["run_id"], "run-123")
+        self.assertEqual(export["provenance"]["dataset_sha256"], "dataset-a")
+        self.assertEqual(export["provenance"]["exported_at"], "2026-09-26T14:30:00+00:00")
+        self.assertEqual(
+            export["original_model_output"]["parsed"]["themes"][0]["interpretation"],
+            VALID_ANALYSIS["themes"][0]["interpretation"],
+        )
+        self.assertEqual(
+            export["reviewed_analysis"]["themes"][0]["interpretation"],
+            "Human-edited interpretation.",
+        )
 
 
 if __name__ == "__main__":
