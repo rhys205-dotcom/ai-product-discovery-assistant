@@ -26,8 +26,8 @@ The suite covers three layers:
 
 ## Baseline
 
-- Future behavioural comparisons should use the current application configuration and hold the relevant model/request settings constant.
-- The v0.4 Gemini benchmark remains separately labelled historical evidence; it is not a clean before/after baseline for the OpenAI-backed application.
+- Future behavioural comparisons use the current Gemini-backed application request path/configuration and hold the relevant model/request settings constant.
+- The v0.4 Gemini benchmark remains separately labelled historical evidence because it used a different benchmark runner/request configuration; same provider/model family does not make it a clean before/after baseline.
 - The human reference remains useful but contestable. Theme count is not a quality target.
 - Deterministic trust failures were captured against repository state `8b79640848fcfbf4adcbbfae555649dfb903935c` before the repair work began.
 
@@ -78,12 +78,12 @@ A confirmed high-severity failure should fail the case regardless of strengths e
 
 ## Running model cases
 
-`run_red_team_baseline.py` runs the model-level cases using the current application analysis contract.
+`run_red_team_baseline.py` runs the model-level cases using the same Gemini-backed analysis path as the current application.
 
-For each run it now preserves:
+For each run it preserves:
 
 - dataset fingerprint;
-- model and prompt hash;
+- provider, model and prompt hash;
 - timestamps;
 - raw model text;
 - validated parsed output; or
@@ -94,14 +94,14 @@ The suite manifest is written even when individual model runs fail, so a failed 
 From the repository root:
 
 ```bash
-export OPENAI_API_KEY="..."
+export GEMINI_API_KEY="..."
 python evaluation/red-team/run_red_team_baseline.py
 ```
 
 PowerShell:
 
 ```powershell
-$env:OPENAI_API_KEY="..."
+$env:GEMINI_API_KEY="..."
 python evaluation/red-team/run_red_team_baseline.py
 ```
 
@@ -175,7 +175,7 @@ Reviewed exports now contain:
 
 - dataset hash and source;
 - analysis run ID;
-- model and prompt hash;
+- provider, model and prompt hash;
 - generation/export timestamps;
 - the original parsed model result;
 - the raw model text; and
@@ -196,12 +196,12 @@ Regression coverage for these deterministic controls lives in `evaluation/test_t
 
 ## What happens next
 
-The immediate next activity is a quick local smoke test of the deterministic trust repairs, followed by the compact behavioural baseline.
+The immediate next activity is the final E15/export smoke verification, followed by the compact behavioural baseline.
 
 The broader roadmap is:
 
 1. repair the evaluation foundation — complete for core development;
-2. record and repair evidence-integrity/state failures — implementation complete, smoke verification pending;
+2. record and repair evidence-integrity/state failures — implementation complete, final smoke verification in progress;
 3. run the compact behavioural baseline;
 4. make one bounded improvement cycle while running practitioner sessions;
 5. rerun the suite, test a fresh holdout and publish the before/after learning.
