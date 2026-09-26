@@ -1,68 +1,158 @@
 # AI Product Discovery Assistant
 
-A working product experiment for turning qualitative customer feedback into evidence-linked findings and proposed opportunities while keeping human review explicit.
+A product experiment for turning qualitative customer feedback into evidence-linked findings while keeping human judgement, provenance and uncertainty visible.
 
 - **Public review demo:** [dowsall.com/discovery-assistant](https://dowsall.com/discovery-assistant)
-- **Benchmark results:** [Three controlled Gemini runs](evaluation/results.md)
-- **Product decision log:** [docs/ai-decisions.md](docs/ai-decisions.md)
-- **Current backlog:** [backlog.md](backlog.md)
+- **Historical benchmark:** [evaluation/results.md](evaluation/results.md)
+- **Behavioural baseline:** [evaluation/red-team/baseline-results.md](evaluation/red-team/baseline-results.md)
+- **Product decisions:** [docs/ai-decisions.md](docs/ai-decisions.md)
+- **Current roadmap:** [backlog.md](backlog.md)
 
-## The product problem
+## Product question
 
-Product teams can collect more interviews, support tickets and survey comments than they can analyse consistently. Summaries alone are not enough: a reviewer needs to see which customer evidence supports a finding, where the model has inferred meaning and what still requires product judgement.
+> Can an LLM help a product practitioner reach a useful, defensible analysis of qualitative feedback faster while preserving evidence traceability and human judgement?
 
-This project tests whether an LLM can help a product practitioner reach a useful, defensible analysis faster without hiding the evidence or making autonomous roadmap decisions.
+The project is intentionally not an autonomous product-management system. AI proposes patterns and investigation opportunities; people inspect the evidence and decide what to accept, edit, reject or investigate.
 
 ## Current prototype
 
-The Streamlit prototype can:
+The Streamlit application can:
 
-1. Load the included synthetic dataset or accept an uploaded CSV.
-2. Validate feedback identifiers before analysis.
-3. Ask an LLM for structured themes, pain points, cited evidence and proposed opportunities.
-4. Validate the minimum structure of the model response before rendering it.
-5. Display the source feedback cited for each finding.
-6. Keep evidence, AI interpretation and proposed opportunity visually separate.
-7. Let a reviewer accept, edit or reject each finding and add a note.
-8. Export reviewed findings with dataset/run provenance while preserving the original model output separately.
+1. load the included synthetic dataset or an uploaded CSV;
+2. validate non-blank, unique feedback IDs;
+3. fingerprint the active dataset and bind findings/reviewer state to the run that produced them;
+4. ask Gemini for schema-constrained recurring themes plus isolated material signals;
+5. validate the returned structure before rendering;
+6. show the source evidence supporting each finding;
+7. flag exact repeated text/source/persona as possible duplicate evidence;
+8. show observable evidence basis alongside the model's strength label;
+9. show contradictory/qualifying evidence as readable source text;
+10. let a reviewer edit interpretations/opportunities, accept/edit/reject findings and add notes;
+11. review low-frequency isolated signals separately from recurring themes; and
+12. export original model output, reviewer changes and provenance separately.
 
 The application does **not** automatically prioritise features, make roadmap decisions or treat model confidence as proof.
 
-## Two demonstration modes
+## Why the output has two lanes
 
-### Public review workflow
+### Recurring themes
 
-The [public demo](https://dowsall.com/discovery-assistant) uses 40 synthetic feedback records and a pre-generated illustrative analysis. It does not call a live model, upload visitor data or send information to a server.
+Recurring themes represent coherent repeated customer problems. Prompt v2 explicitly allows `themes: []` rather than forcing unrelated one-off requests into an artificial pattern.
 
-Its purpose is to demonstrate the review/governance interaction: inspecting evidence, challenging an interpretation and recording a human decision. The illustrative sample is not presented as one of the stored benchmark runs.
+### Isolated signals
 
-### Local LLM prototype
+Some important evidence is rare by nature. A single report suggesting a material security, privacy, safety, compliance, data-integrity or financial-control issue should not need to masquerade as a recurring theme to survive analysis.
 
-The local Streamlit application sends the supplied feedback to Gemini using the Google Gen AI SDK and returns schema-constrained JSON for application-side validation and review. Use synthetic or otherwise authorised data only.
+`isolated_signals` therefore records:
+- what was observed;
+- why it may matter;
+- what remains uncertain; and
+- a verification/investigation next step.
 
-The local workflow fingerprints the active dataset and binds findings and reviewer state to the analysis run that produced them. Changing dataset or starting a new analysis invalidates stale findings/review controls rather than allowing evidence to be silently reattached.
+The contract explicitly avoids calling a one-off report a confirmed incident or autonomously turning it into a roadmap decision.
+
+## Duplicate-evidence handling
+
+The baseline showed a repeatable high-severity weakness: five identical feedback rows could be treated as five independent-looking pieces of Strong evidence.
+
+The current application therefore deterministically flags exact repetition of:
+- feedback text;
+- source; and
+- persona.
+
+That is presented as **possible duplicate evidence**, not proof that the records came from one respondent. The model is instructed not to convert repeated IDs into stronger consensus merely because there are more IDs.
+
+## Evaluation journey
+
+### Historical controlled benchmark
+
+Three earlier `gemini-3.5-flash` runs on the 40-record sample produced:
+
+- 100% citation validity;
+- 95.5% mean evidence precision; and
+- 66.7% mean theme coverage
+
+under the original scorer.
+
+Those numbers remain historical evidence. Scorer v2 later exposed mechanical limitations in the original scoring approach, and the human reference remains contestable.
+
+### Trust-foundation repair
+
+The project then recorded and repaired deterministic trust failures:
+
+- duplicate/blank feedback IDs;
+- stale findings after dataset switches;
+- stale reviewer state;
+- insufficient model-response validation;
+- failed calls leaving prior results visible; and
+- reviewed exports that needed stronger provenance/original-output separation.
+
+E14/E15 smoke tests and the regression suite verified those repairs.
+
+### Compact behavioural baseline
+
+The next phase ran E01–E13 once, then repeated selected consequential cases twice.
+
+The baseline identified:
+
+- **E08 — confirmed high-severity duplicate-evidence failure:** repeated evidence was consistently treated as Strong independent-looking support.
+- **E12 — confirmed high-severity isolated-signal failure:** a cross-account access report was either omitted or overstated as a confirmed/critical vulnerability.
+- **E07 — stochastic neutral-vs-contradiction weakness.**
+- **E13 — repeatable abstention weakness:** unrelated UI requests were repeatedly manufactured into a Moderate theme.
+- **E01 — repeatable theme-separation weakness.**
+- **E11 — mostly grounded with one run drifting into unsupported consequences.**
+
+It also preserved strengths: genuine disagreement (E06), segment calibration (E09), and resistance to the tested prompt-injection pattern (E10).
+
+See [the full baseline review](evaluation/red-team/baseline-results.md).
+
+## Prompt / contract v2
+
+The current bounded improvement cycle is intentionally tied to those measured failures.
+
+Prompt v2:
+- treats feedback as untrusted data and ignores embedded instructions;
+- allows abstention;
+- requires coherent recurring problems rather than broad category grouping;
+- defines contradiction narrowly;
+- treats non-use/non-exposure as neutral;
+- prohibits unsupported technical causes, averages, business impact and causal consequences;
+- exposes exact duplicate groups as possible repeated evidence; and
+- adds `isolated_signals` with explicit uncertainty and investigation language.
+
+The aim is not to make every synthetic case pass. The next check is whether these changes improve the targeted failures **without regressing existing strengths**.
 
 ## Run locally
 
-1. Install dependencies:
+Install dependencies:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+pip install -r requirements.txt
+```
 
-2. Run the deterministic regression tests:
+Run deterministic tests:
 
-   ```bash
-   python -m unittest discover -s evaluation -p "test_*.py"
-   ```
+```bash
+python -m unittest discover -s evaluation -p "test_*.py"
+```
 
-3. Set `GEMINI_API_KEY` in your environment.
-4. Optionally set `GEMINI_MODEL` to override the configured default (`gemini-3.5-flash`).
-5. Start the application:
+Set your Gemini key:
 
-   ```bash
-   streamlit run app.py
-   ```
+```bash
+export GEMINI_API_KEY="..."
+```
+
+Optionally override the model:
+
+```bash
+export GEMINI_MODEL="gemini-3.5-flash"
+```
+
+Start the application:
+
+```bash
+streamlit run app.py
+```
 
 The CSV must contain:
 
@@ -71,121 +161,80 @@ The CSV must contain:
 - `persona`
 - `feedback`
 
-`feedback_id` values must be non-blank and unique after whitespace is trimmed.
+## Red-team evaluation
+
+Run all model cases:
+
+```bash
+python evaluation/red-team/run_red_team_baseline.py
+```
+
+Run selected cases:
+
+```bash
+python evaluation/red-team/run_red_team_baseline.py --cases E07,E08,E10,E12,E13
+```
+
+Repeat selected cases:
+
+```bash
+python evaluation/red-team/run_red_team_baseline.py --cases E07,E08,E10,E12,E13 --runs 3
+```
+
+The runner preserves:
+- provider/model;
+- prompt version and hash;
+- dataset fingerprint;
+- detected exact-duplicate groups;
+- timestamps;
+- raw model text;
+- validated parsed output; and
+- explicit error records.
 
 ## Product principles
 
-- **AI assists; people decide.** Findings are proposals for review.
-- **Evidence before conclusions.** Every finding should cite source feedback IDs.
-- **Separate evidence from inference.** Customer statements, model interpretation and proposed opportunities are different things.
-- **No false precision.** Evidence strength should be grounded in observable support, not a model-generated probability.
-- **Synthetic public data.** The demonstration exposes no former-employer or customer information.
-- **Evaluate repeated performance.** A polished example is not evidence that the product is reliable.
-- **Validate the product, not only the model.** The workflow should help practitioners produce useful, defensible analysis, not merely score well on synthetic benchmarks.
-- **Preserve provenance.** Dataset identity, model output, reviewer changes and run metadata should not be silently mixed.
-
-The reasoning behind these choices is recorded in the [AI decision log](docs/ai-decisions.md).
+- **AI assists; people decide.**
+- **Evidence before conclusions.**
+- **Separate evidence from inference.**
+- **Rare does not mean irrelevant.**
+- **Repeated IDs do not prove independent customers.**
+- **Neutral context is not contradiction.**
+- **No false precision or invented impact.**
+- **Preserve provenance.**
+- **Evaluate repeated behaviour, not polished examples.**
+- **Validate the product, not only the model.**
 
 ## Current architecture
 
 - Python
-- Streamlit review interface
+- Streamlit
 - Google Gen AI SDK / Gemini Interactions API
-- Schema-constrained JSON plus application-side contract validation
-- CSV input with identifier validation
+- Schema-constrained JSON + application-side validation
+- CSV input
 - SHA-256 dataset identity
-- Synthetic 40-record sample dataset
-- Human accept/edit/reject workflow
-- Provenance-preserving reviewed JSON export
+- Exact-duplicate evidence detection
+- Recurring-theme + isolated-signal output contract
+- Human review
+- Provenance-preserving JSON export
 
-RAG, embeddings and vector storage are deliberately excluded from the MVP. Retrieval infrastructure is not presently justified because the current datasets are supplied directly to the model; that is not a claim that retrieval has been proven reliable.
+RAG, embeddings, vector storage and production-scale infrastructure remain deliberately excluded because no measured product problem currently justifies them.
 
-## What is validated—and what is not
+## What is still unvalidated
 
-### Implemented
-
-- Evidence-linked structured findings
-- Rejection of blank/duplicate feedback IDs before analysis
-- Detection of cited IDs missing from the active dataset
-- Dataset fingerprinting and analysis/run binding
-- Stale analysis/review-state invalidation on dataset or run change
-- Structured model-response validation
-- Failed-attempt handling that clears older analysis first
-- Preservation of raw/original model output separately from reviewer edits
-- Dataset/run/provider/model/prompt provenance in review exports
-- Human review decisions and notes
-- Editable interpretation
-- Public static review workflow
-- Human-created reference baseline for the 40-record dataset
-- Relationship-aware scorer v2 with explicit unmatched-finding and duplicate-mapping checks
-- Regression tests for scorer and trust-foundation failure modes
-- Secure historical Gemini benchmark runner limited to three controlled calls
-- Three independently generated, human-mapped and scored historical benchmark runs
-- Red-team runner that retains failed calls/invalid responses as explicit outcomes
-
-### Historical benchmark finding
-
-Across three `gemini-3.5-flash` runs, citation validity was 100% and mean evidence precision was 95.5%. The model consistently represented the two dominant reference distinctions but omitted the smaller communication and audit-history reference distinction in every run, producing mean theme coverage of 66.7%.
-
-Those runs remain useful historical evidence. Scorer v2 now makes the limits more explicit: it scores evidence at the finding–citation relationship level, checks citations from unmatched findings and prevents duplicate mappings from disappearing. The human reference itself remains contestable; an independent blind practitioner review is retained as a non-blocking trailing activity.
-
-See the [full results and limitations](evaluation/results.md).
-
-### Broader review finding
-
-A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
-
-The deterministic trust failures were recorded before repair in [`evaluation/red-team/trust-baseline.md`](evaluation/red-team/trust-baseline.md). The repair implementation is now in place. The regression suite and E14 malformed-ID smoke test have passed; E15 stale-state/export smoke verification remains before Step 2 is closed.
-
-It also highlighted a larger gap: the practical product hypothesis — whether practitioners reach a useful, defensible analysis faster — has not yet been tested.
-
-### Not yet validated
-
-- Whether the human reference theme boundaries are shared by another independent practitioner
-- Final E15 stale-state/export smoke verification
-- Behaviour across the compact model red-team cases using the current Gemini application configuration
-- Whether targeted changes improve high-severity model failures without causing regressions
-- Whether practitioners gain a useful time or quality advantage
-- Whether behaviour generalises to a fresh holdout dataset
-- Performance on larger or commercially realistic datasets
-
-Those gaps drive the [revised roadmap](backlog.md); they are not presented as completed outcomes.
-
-## Evaluation
-
-The [evaluation workspace](evaluation/README.md) contains the contestable human reference, scorer v2, scorer regression tests, trust-foundation tests, independent-review instructions, generated model outputs and historical benchmark artefacts.
-
-Future before/after product experiments will use the **current Gemini-backed application request path and configuration** and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence because it used a different benchmark runner/request path and should not be treated as a clean before/after baseline merely because the provider/model family overlaps.
-
-The deterministic trust baseline is recorded separately from the repaired implementation. The next model-evaluation phase is the existing compact behavioural suite; a larger automated eval platform remains out of scope.
-
-## Repository structure
-
-- `app.py` — Streamlit review interface
-- `src/analyse_feedback.py` — prompt construction, feedback validation, Gemini call and model-response validation
-- `src/review_integrity.py` — dataset/run binding and provenance-preserving export helpers
-- `data/sample-feedback.csv` — synthetic source feedback
-- `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — reference, benchmark, scorer v2, trust tests, blind-review pack and red-team cases
-- `examples/` — example outputs
-- `backlog.md` — current experiments and revised roadmap
+- Whether another practitioner shares the original reference theme boundaries.
+- Whether prompt/contract v2 improves the measured behavioural failures without regressions.
+- Whether practitioners produce a useful reviewed analysis faster or better with the workflow.
+- Whether behaviour generalises to a fresh holdout dataset.
+- Performance on larger or commercially realistic datasets.
 
 ## Status
 
-**v0.4 — First controlled benchmark completed**
+**Step 1 — evaluation foundation: complete.**
 
-**Step 1 — Core evaluation foundation repaired**
+**Step 2 — trust repairs: complete and smoke-tested.**
 
-Scorer blind spots have been fixed and documented, the human reference is explicitly contestable, and the independent reference review is now a trailing activity rather than a development gate.
+**Step 3 — compact behavioural baseline: complete.**
 
-**Step 2 — Trust-repair implementation complete; final local verification in progress**
+**Step 4 — bounded improvement cycle: in progress.**
 
-The pre-fix failures are recorded. Identifier validation, dataset/run binding, stale-state invalidation, structured response validation, failure-state handling and provenance-preserving exports are implemented with regression coverage. The regression suite and E14 smoke test have passed; E15 and one export inspection remain.
-
-After that short verification, the next roadmap activity is **Step 3 — run the compact behavioural baseline** on the current Gemini-backed application configuration.
-
-Practitioner validation remains in the bounded improvement cycle after the behavioural baseline.
-
-## About
-
-This is a personal product-management experiment, not production software. Its purpose is to demonstrate product framing, evidence traceability, human oversight, evaluation discipline and evidence-led iteration of an AI-assisted workflow.
+The next engineering/evaluation task is to pull prompt/contract v2, run the deterministic tests and UI smoke checks, then rerun the same behavioural cases before adding any further architecture.
