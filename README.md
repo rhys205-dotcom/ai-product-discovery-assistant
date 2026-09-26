@@ -18,11 +18,13 @@ This project tests whether an LLM can help a product practitioner reach a useful
 The Streamlit prototype can:
 
 1. Load the included synthetic dataset or accept an uploaded CSV.
-2. Ask an LLM for structured themes, pain points, cited evidence and proposed opportunities.
-3. Display the source feedback cited for each finding.
-4. Keep evidence, AI interpretation and proposed opportunity visually separate.
-5. Let a reviewer accept, edit or reject each finding and add a note.
-6. Export the reviewed result as JSON.
+2. Validate feedback identifiers before analysis.
+3. Ask an LLM for structured themes, pain points, cited evidence and proposed opportunities.
+4. Validate the minimum structure of the model response before rendering it.
+5. Display the source feedback cited for each finding.
+6. Keep evidence, AI interpretation and proposed opportunity visually separate.
+7. Let a reviewer accept, edit or reject each finding and add a note.
+8. Export reviewed findings with dataset/run provenance while preserving the original model output separately.
 
 The application does **not** automatically prioritise features, make roadmap decisions or treat model confidence as proof.
 
@@ -38,6 +40,8 @@ Its purpose is to demonstrate the review/governance interaction: inspecting evid
 
 The local Streamlit application sends the supplied feedback to a configurable OpenAI model and returns structured JSON for review. Use synthetic or otherwise authorised data only.
 
+The local workflow now fingerprints the active dataset and binds findings and reviewer state to the analysis run that produced them. Changing dataset or starting a new analysis invalidates stale findings/review controls rather than allowing evidence to be silently reattached.
+
 ## Run locally
 
 1. Install dependencies:
@@ -46,9 +50,15 @@ The local Streamlit application sends the supplied feedback to a configurable Op
    pip install -r requirements.txt
    ```
 
-2. Set `OPENAI_API_KEY` in your environment.
-3. Optionally set `OPENAI_MODEL` to override the configured default.
-4. Start the application:
+2. Run the deterministic regression tests:
+
+   ```bash
+   python -m unittest discover -s evaluation -p "test_*.py"
+   ```
+
+3. Set `OPENAI_API_KEY` in your environment.
+4. Optionally set `OPENAI_MODEL` to override the configured default.
+5. Start the application:
 
    ```bash
    streamlit run app.py
@@ -61,6 +71,8 @@ The CSV must contain:
 - `persona`
 - `feedback`
 
+`feedback_id` values must be non-blank and unique after whitespace is trimmed.
+
 ## Product principles
 
 - **AI assists; people decide.** Findings are proposals for review.
@@ -70,6 +82,7 @@ The CSV must contain:
 - **Synthetic public data.** The demonstration exposes no former-employer or customer information.
 - **Evaluate repeated performance.** A polished example is not evidence that the product is reliable.
 - **Validate the product, not only the model.** The workflow should help practitioners produce useful, defensible analysis, not merely score well on synthetic benchmarks.
+- **Preserve provenance.** Dataset identity, model output, reviewer changes and run metadata should not be silently mixed.
 
 The reasoning behind these choices is recorded in the [AI decision log](docs/ai-decisions.md).
 
@@ -78,29 +91,37 @@ The reasoning behind these choices is recorded in the [AI decision log](docs/ai-
 - Python
 - Streamlit review interface
 - OpenAI Responses API
-- Structured JSON output
-- CSV input
+- Structured JSON output with application-side contract validation
+- CSV input with identifier validation
+- SHA-256 dataset identity
 - Synthetic 40-record sample dataset
 - Human accept/edit/reject workflow
-- Reviewed JSON export
+- Provenance-preserving reviewed JSON export
 
 RAG, embeddings and vector storage are deliberately excluded from the MVP. Retrieval infrastructure is not presently justified because the current datasets are supplied directly to the model; that is not a claim that retrieval has been proven reliable.
 
 ## What is validated—and what is not
 
-### Implemented and evaluated
+### Implemented
 
 - Evidence-linked structured findings
-- Detection of missing cited feedback IDs in the review interface
+- Rejection of blank/duplicate feedback IDs before analysis
+- Detection of cited IDs missing from the active dataset
+- Dataset fingerprinting and analysis/run binding
+- Stale analysis/review-state invalidation on dataset or run change
+- Structured model-response validation
+- Failed-attempt handling that clears older analysis first
+- Preservation of raw/original model output separately from reviewer edits
+- Dataset/run/model/prompt provenance in review exports
 - Human review decisions and notes
 - Editable interpretation
-- Review export
 - Public static review workflow
 - Human-created reference baseline for the 40-record dataset
 - Relationship-aware scorer v2 with explicit unmatched-finding and duplicate-mapping checks
-- Regression tests for the scorer blind spots identified during red-team review
+- Regression tests for scorer and trust-foundation failure modes
 - Secure Gemini benchmark runner limited to three controlled calls
 - Three independently generated, human-mapped and scored historical benchmark runs
+- Red-team runner that retains failed calls/invalid responses as explicit outcomes
 
 ### Historical benchmark finding
 
@@ -114,13 +135,16 @@ See the [full results and limitations](evaluation/results.md).
 
 A wider review identified important product and evaluation risks that the first benchmark does not adequately test: duplicate/blank IDs, stale findings after dataset changes, narrow evidence being presented too strongly, prompt injection, unsupported embellishment, false contradiction, over-merging and over-fragmentation.
 
+The deterministic trust failures were recorded before repair in [`evaluation/red-team/trust-baseline.md`](evaluation/red-team/trust-baseline.md). The repair implementation is now in place; local regression and Streamlit smoke verification are the remaining check before the behavioural baseline.
+
 It also highlighted a larger gap: the practical product hypothesis — whether practitioners reach a useful, defensible analysis faster — has not yet been tested.
 
 ### Not yet validated
 
 - Whether the human reference theme boundaries are shared by another independent practitioner
-- Behaviour across the compact red-team cases using the current application configuration
-- Whether targeted changes improve high-severity failures without causing regressions
+- Local smoke verification of the repaired E14/E15 trust cases
+- Behaviour across the compact model red-team cases using the current application configuration
+- Whether targeted changes improve high-severity model failures without causing regressions
 - Whether practitioners gain a useful time or quality advantage
 - Whether behaviour generalises to a fresh holdout dataset
 - Performance on larger or commercially realistic datasets
@@ -129,19 +153,20 @@ Those gaps drive the [revised roadmap](backlog.md); they are not presented as co
 
 ## Evaluation
 
-The [evaluation workspace](evaluation/README.md) contains the contestable human reference, scorer v2, scorer regression tests, independent-review instructions, generated model outputs and historical benchmark artefacts.
+The [evaluation workspace](evaluation/README.md) contains the contestable human reference, scorer v2, scorer regression tests, trust-foundation tests, independent-review instructions, generated model outputs and historical benchmark artefacts.
 
 Future before/after product experiments will use one application configuration and hold the relevant model/request settings constant. The earlier Gemini benchmark remains separately labelled historical evidence rather than being treated as directly comparable with the OpenAI-backed application.
 
-The next evaluation phase is deliberately proportionate: capture and fix evidence-integrity failures, run the existing compact behavioural cases, then combine one bounded improvement cycle with practitioner validation. The independent reference review can happen alongside this work rather than blocking it. A larger automated eval platform is out of scope.
+The deterministic trust baseline is recorded separately from the repaired implementation. The next model-evaluation phase is the existing compact behavioural suite; a larger automated eval platform remains out of scope.
 
 ## Repository structure
 
 - `app.py` — Streamlit review interface
-- `src/analyse_feedback.py` — prompt construction and LLM analysis
+- `src/analyse_feedback.py` — prompt construction, feedback validation and model-response validation
+- `src/review_integrity.py` — dataset/run binding and provenance-preserving export helpers
 - `data/sample-feedback.csv` — synthetic source feedback
 - `docs/ai-decisions.md` — product and AI decision record
-- `evaluation/` — reference, benchmark, scorer v2, blind-review pack and red-team cases
+- `evaluation/` — reference, benchmark, scorer v2, trust tests, blind-review pack and red-team cases
 - `examples/` — example outputs
 - `backlog.md` — current experiments and revised roadmap
 
@@ -151,13 +176,15 @@ The next evaluation phase is deliberately proportionate: capture and fix evidenc
 
 **Step 1 — Core evaluation foundation repaired**
 
-The scorer blind spots have been fixed and documented, the human reference is explicitly marked as contestable, the historical benchmark has been reinterpreted under scorer v2, and a blind practitioner-review pack is ready. The independent review remains a trailing activity rather than a development gate.
+Scorer blind spots have been fixed and documented, the human reference is explicitly contestable, and the independent reference review is now a trailing activity rather than a development gate.
 
-**Step 2 — Capture and fix trust failures — current focus**
+**Step 2 — Trust-repair implementation complete; local verification next**
 
-The next work is to record and repair deterministic evidence-identity and stale-state failures, strengthen structured-response validation, preserve original-versus-edited output and add dataset/run provenance to exports.
+The pre-fix failures are recorded. Identifier validation, dataset/run binding, stale-state invalidation, structured response validation, failure-state handling and provenance-preserving exports are implemented with regression coverage.
 
-Practitioner validation of the product itself remains a later, separate activity in the bounded improvement cycle.
+After a short local regression/E14/E15 smoke check, the next roadmap activity is **Step 3 — run the compact behavioural baseline** on the current OpenAI-backed application configuration.
+
+Practitioner validation remains in the bounded improvement cycle after the behavioural baseline.
 
 ## About
 
