@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Run exactly three controlled Gemini analyses and save the raw outputs.
+"""Run exactly three controlled historical Gemini analyses using frozen prompt v1.
 
-The API key is read from GEMINI_API_KEY and is never written to disk. The
-script deliberately does not score or publish results automatically: theme
-matching and qualitative review remain explicit human-review steps.
+This runner is intentionally isolated from the current application prompt so a
+future prompt change cannot silently rewrite the historical experiment. The API
+key is read from GEMINI_API_KEY and is never written to disk.
 """
 
 import hashlib
@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.analyse_feedback import build_prompt, load_feedback
+from src.analyse_feedback import load_feedback
 
 
 RUN_COUNT = 3
@@ -68,6 +68,65 @@ FINDINGS_SCHEMA = {
 }
 
 
+def build_historical_prompt_v1(feedback):
+    """Frozen copy of the prompt used by the September 2026 benchmark."""
+    feedback_text = "\n".join(
+        f"{item['feedback_id']} | {item['source']} | "
+        f"{item['persona']} | {item['feedback']}"
+        for item in feedback
+    )
+
+    return f"""
+You are assisting a Product Manager analysing qualitative customer feedback.
+
+Your job is to identify meaningful recurring customer problems while remaining
+strictly faithful to the supplied evidence.
+
+IMPORTANT RULES:
+
+1. Do not treat isolated feature requests as major themes.
+2. Do not invent customer needs or facts.
+3. Distinguish customer evidence from your interpretation.
+4. Every theme must reference the feedback IDs that support it.
+5. Consider contradictory evidence.
+6. Prefer underlying customer problems over requested solutions.
+7. Do not make autonomous prioritisation decisions.
+
+For each meaningful theme return:
+
+- theme
+- pain_point
+- evidence_ids
+- evidence_strength
+- interpretation
+- potential_opportunity
+- contradictory_evidence
+
+Evidence strength must be one of Strong, Moderate or Limited. Base it on the
+amount, consistency and diversity of evidence, not on your own confidence.
+
+CUSTOMER FEEDBACK:
+
+{feedback_text}
+
+Return only valid JSON using this structure:
+
+{{
+  "themes": [
+    {{
+      "theme": "",
+      "pain_point": "",
+      "evidence_ids": [],
+      "evidence_strength": "",
+      "interpretation": "",
+      "potential_opportunity": "",
+      "contradictory_evidence": []
+    }}
+  ]
+}}
+"""
+
+
 def utc_now():
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -108,14 +167,14 @@ def run_once(client, model, prompt, run_number, benchmark_id, record_count):
 def main():
     if not os.environ.get("GEMINI_API_KEY"):
         raise SystemExit(
-            "GEMINI_API_KEY is not set. Create a key in Google AI Studio and "
-            "store it as an environment variable; never add it to this repository."
+            "GEMINI_API_KEY is not set. Store it as an environment variable; "
+            "never add it to this repository."
         )
 
     model = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
     feedback = load_feedback()
-    prompt = build_prompt(feedback)
-    benchmark_id = datetime.now(timezone.utc).strftime("gemini-%Y%m%dT%H%M%SZ")
+    prompt = build_historical_prompt_v1(feedback)
+    benchmark_id = datetime.now(timezone.utc).strftime("gemini-v1-%Y%m%dT%H%M%SZ")
     output_dir = OUTPUT_ROOT / benchmark_id
     output_dir.mkdir(parents=True, exist_ok=False)
 
@@ -132,9 +191,10 @@ def main():
         "status": "running",
         "runs": [],
         "notes": [
+            "Historical runner: prompt v1 is embedded here and does not import the current application prompt.",
             "The API key is not stored in this manifest.",
             "Raw outputs require human theme mapping before scoring.",
-            "Free-tier Gemini requests may be used by Google to improve its products; this benchmark uses synthetic public data only."
+            "Synthetic public data only."
         ],
     }
     manifest_path = output_dir / "manifest.json"
