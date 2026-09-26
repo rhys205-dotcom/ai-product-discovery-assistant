@@ -8,8 +8,8 @@ The first controlled Gemini benchmark remains useful historical evidence, but it
 
 - a **contestable human reference baseline**, not objective ground truth;
 - **scorer v2**, which keeps unmatched findings visible and scores evidence at the finding–citation relationship level;
-- the **current OpenAI-backed application configuration** as the baseline for future before/after product experiments;
-- the Gemini benchmark as a separately labelled historical experiment;
+- the **current Gemini-backed application request path/configuration** as the baseline for future before/after product experiments;
+- the earlier Gemini benchmark as a separately labelled historical experiment because it used a different benchmark runner/request configuration;
 - deterministic trust controls for dataset identity, review state, model-response structure and export provenance.
 
 An independent practitioner review of the three-theme reference is still pending. It is now a **trailing, non-blocking evidence-strengthening activity** rather than a gate for continued development. See [`independent-reference-review.md`](independent-reference-review.md).
@@ -103,7 +103,7 @@ The 20 September 2026 experiment used three independent calls with:
 
 The stored v1 score files are preserved as historical artefacts. [`results.md`](results.md) distinguishes those original published metrics from the relationship-aware v2 re-score.
 
-This benchmark is **not** the future application baseline because the current application uses a different provider and response path. Future prompt comparisons should hold the current application configuration, dataset and model/request settings constant.
+This benchmark is **not** the future application baseline. The current application also uses Gemini, but it now has its own application request path, validation, trust controls and provenance contract. Same provider/model family does not make the historical benchmark a clean before/after baseline. Future prompt comparisons should hold the current application configuration, dataset and model/request settings constant.
 
 ## Red-team suite
 
@@ -111,7 +111,7 @@ The adversarial suite covers prompt injection, duplicated evidence, source domin
 
 See [`red-team/README.md`](red-team/README.md) for the case specification, datasets, runner, deterministic smoke tests and manual scorecard.
 
-The red-team runner now stores raw model text and validated output separately, and records failed calls or invalid responses as explicit run outcomes while still completing the suite manifest.
+The red-team runner now uses the same Gemini-backed analysis path as the application, stores raw model text and validated output separately, and records failed calls or invalid responses as explicit run outcomes while still completing the suite manifest.
 
 ## Files
 
